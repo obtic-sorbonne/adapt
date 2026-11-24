@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adapt-CEFR</title>
+<style>
+:root{--bg:#F6F5F1;--card:#FFFFFF;--line:#E2E0D8;--line2:#C9C7BF;--ink:#1F1E1B;--ink2:#3D3D3A;--muted:#5C5A55;--accent:#1D4ED8;--accentDark:#1E3A8A;--okBg:#E3F2E8;--ok:#1E6B3A;--warnBg:#FDF0D5;--warn:#8A4B00;--errBg:#FCE8E6;--err:#B42318;--chip:#ECEAE4}
+*{box-sizing:border-box}
+html{overflow-y:scroll;scrollbar-gutter:stable}
+.bar{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
+.barIn{max-width:1440px;margin:0 auto;padding:8px 28px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+button,input,textarea,select{font-family:inherit;font-size:13px}
+.wrap{max-width:1440px;margin:0 auto;padding:18px 28px 40px;display:flex;flex-direction:column;gap:14px}
+
+.brand{font-weight:700;font-size:16px;background:none;border:none;cursor:pointer;color:var(--ink);padding:8px 10px 8px 0}
+.brand:hover{color:var(--accent)}
+nav{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.nav{padding:8px 12px;border-radius:8px;border:1px solid transparent;background:none;cursor:pointer;color:var(--muted);font-size:14px;font-weight:500;line-height:20px}
+.nav.on{background:var(--card);border-color:var(--line);color:var(--ink)}
+.nav .n{display:inline-flex;width:20px;height:20px;border-radius:50%;align-items:center;justify-content:center;background:var(--chip);color:var(--ink2);font-size:12px;margin-right:6px}
+.nav.on .n{background:var(--accent);color:#fff}
+.admin .nav{font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.chip{display:inline-flex;align-items:center;padding:4px 10px;border-radius:6px;background:var(--chip);color:var(--ink2);font-size:12px}
+.chip.ok{background:var(--okBg);color:var(--ok)}.chip.warn{background:var(--warnBg);color:var(--warn)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.between{justify-content:space-between}
+.muted{color:var(--muted);font-size:12px}
+h1{margin:0;font-size:22px;font-weight:600}h2{margin:0;font-size:15px;font-weight:600}
+.btn{height:40px;padding:0 16px;border-radius:8px;border:1px solid var(--line2);background:#fff;color:var(--ink2);cursor:pointer;font-weight:500}
+.btn:hover{border-color:var(--ink2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}.btn.primary:hover{background:var(--accentDark)}
+.btn.outline{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{background:#EFEEEA;border-color:#E2E0D8;color:#9B9890;cursor:not-allowed}
+.opt{min-width:38px;height:36px;padding:0 10px;border-radius:8px;border:1px solid var(--line2);background:#fff;color:var(--ink2);cursor:pointer;font-weight:500}
+.opt.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.opt:disabled{cursor:default}.opt:disabled:not(.on){color:#9B9890}
+.small{height:32px;padding:0 10px;border-radius:8px;border:1px solid var(--line2);background:#fff;cursor:pointer;font-size:12px}
+.small.yes{background:var(--okBg);border-color:var(--ok);color:var(--ok)}.small.no{background:var(--errBg);border-color:var(--err);color:var(--err)}
+label.f,div.f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
+input[type=text],input[type=password],select,textarea{border:1px solid var(--line2);border-radius:8px;padding:0 10px;height:40px;background:#fff;color:var(--ink)}
+textarea{padding:10px;height:auto;line-height:1.6;resize:vertical}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.stat{display:flex;flex-direction:column;gap:4px}.stat b{font-size:24px;font-weight:600}
+.tabs{display:inline-flex;gap:4px;padding:4px;background:var(--chip);border-radius:10px}
+.tab{height:36px;padding:0 14px;border-radius:8px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-weight:500}
+.tab.on{background:#fff;color:var(--ink)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-weight:500;font-size:12px;color:var(--muted);padding:10px 12px;border-bottom:1px solid var(--line)}
+td{padding:10px 12px;border-bottom:1px solid #EFEDE7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scroll{overflow-x:auto}
+.toast{padding:10px 14px;border-radius:10px;background:var(--okBg);color:var(--ok);font-size:13px;box-shadow:0 6px 20px rgba(0,0,0,.12);border:1px solid #BFDFC9}
+.err{color:var(--err);font-size:12px}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) 0fr minmax(0,1fr);column-gap:6px;transition:grid-template-columns .6s ease,column-gap .6s ease;align-items:stretch}
+.cols.two{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:12px}
+.cols.three{grid-template-columns:repeat(3,minmax(0,1fr));column-gap:12px;transition:none}
+textarea.edit{resize:none;display:block;width:100%;font-size:13px;line-height:1.6;padding:10px;border:1px solid var(--line2);border-radius:8px;font-family:inherit}
+.cols.open{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr) minmax(0,1fr);column-gap:12px}
+.ver{min-width:0;display:flex;flex-direction:column;gap:10px}
+.txt{height:210px;overflow:auto;font-size:13px;line-height:1.6;white-space:pre-line}
+.body{height:300px;box-sizing:border-box}
+.arrow{width:32px;height:32px;border-radius:8px;border:1px solid var(--accent);background:#fff;color:var(--accent);cursor:pointer;font-size:16px;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:0}
+.arrow:hover{background:#EEF3FF}
+.arrow:disabled{border-color:#E2E0D8;background:#EFEEEA;color:#9B9890;cursor:not-allowed}
+#your.body{resize:none;display:block;width:100%}
+.mid{min-width:0;overflow:hidden;opacity:0;visibility:hidden;padding:0;border:0;border-radius:12px;background:#fff;display:flex;flex-direction:column;gap:10px;transition:opacity .35s ease .45s}
+.cols.open .mid{opacity:1;visibility:visible;padding:15px;border:2px solid var(--accent)}
+.crit{display:flex;flex-direction:column;gap:4px}
+details summary{cursor:pointer;font-size:12px;color:var(--muted)}
+.checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;margin-top:6px;font-size:12px}
+.empty{text-align:center;padding:48px 16px;color:var(--muted)}
+@media (max-width:900px){.cols,.cols.two,.cols.three,.cols.open{grid-template-columns:minmax(0,1fr)!important}.mid{opacity:1;visibility:visible}.grid4{grid-template-columns:repeat(2,minmax(0,1fr))}.grid3{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion:reduce){.cols,.mid{transition:none}}
+</style>
+</head>
+<body>
+<header class="bar"><div class="barIn">
+<div class="row">
+<button class="brand" id="brand" title="Back to start">Adapt-CEFR</button>
+<nav aria-label="Workflow" id="mainNav"></nav>
+</div>
+<div class="row"><span class="chip" title="One installation per corpus language" id="langChip">French corpus</span><nav aria-label="Administration" class="admin" id="adminNav"></nav></div>
+</div></header>
+<div class="wrap">
+<div id="toast" aria-live="polite" style="position:fixed;right:20px;bottom:20px;z-index:50;display:flex;flex-direction:column;gap:8px;max-width:440px;pointer-events:none"></div>
+<main id="view"></main>
+</div>
+
+<script>
+/* ---------- Sample data (mockup) ---------- */
+const SAMPLE = {
+  'FR-Adapt': {
+    lang: 'FR', mode: 'Adapt', srcLevel: 'C1', level: 'B1', dir: 'simplification',
+    srcLabel: 'Source text · « La ville de demain face au climat » · 612 words',
+    src: "Confrontées à la multiplication des épisodes caniculaires, les municipalités engagent une transformation profonde de l'espace urbain : désimperméabilisation des sols, végétalisation des cours d'école, création d'îlots de fraîcheur. Si ces politiques suscitent l'adhésion d'une majorité d'habitants, leur coût et la lenteur de leur mise en œuvre alimentent néanmoins de vifs débats…",
+    crit2: 'Meaning', crit2Hint: 'key information kept, no addition, no misinterpretation', target: { min: 300, max: 320, avg: 13, pmin: 3, pmax: 4, conn: ['cependant', 'pourtant', 'par conséquent', 'donc', "c'est pourquoi"] },
+    judgePick: 'B',
+    A: { model: 'Mistral', judgeLevel: 4, judgeDir: 'Too hard', estLevel: 'B1', estReg: 'neutral', chips: [['312 words', 1], ['11.4 / sentence', 1], ['3 paragraphs', 1], ['4 connectors', 1]],
+      text: "Les villes changent. En été, il fait de plus en plus chaud et les habitants cherchent de l'ombre. Cependant, les maires ont des idées pour rafraîchir les rues.\n\nIls plantent des arbres, créent des parcs et remplacent le béton par de l'herbe. Par conséquent, la température baisse un peu dans certains quartiers.\n\nCes projets coûtent cher, mais beaucoup de villes pensent qu'ils sont nécessaires." },
+    B: { model: 'Qwen', judgeLevel: 3, judgeDir: 'Too easy', estLevel: 'B1', estReg: 'neutral', chips: [['305 words', 1], ['10.8 / sentence', 1], ['5 paragraphs', 0], ['3 connectors', 1]],
+      text: "Il fait de plus en plus chaud dans les villes. C'est pourquoi beaucoup de mairies plantent des arbres.\n\nElles transforment aussi les cours d'école en jardins.\n\nLes enfants peuvent jouer à l'ombre.\n\nCependant, ces projets coûtent cher.\n\nIls prennent aussi du temps." }
+  },
+  'FR-Generate': {
+    lang: 'FR', mode: 'Generate', srcLevel: null, level: 'B2', dir: "texte d'opinion",
+    srcLabel: "Brief · environnement · texte d'opinion",
+    src: "Un habitant écrit au journal local pour défendre un centre-ville sans voitures le week-end.\nThème : environnement · Type : texte d'opinion · Visée : convaincre · Public : adultes.",
+    crit2: 'Brief', crit2Hint: 'theme, text type and situation respected', target: { min: 400, max: 420, avg: 20, pmin: 3, pmax: 6, conn: ['de plus', 'en revanche', 'cependant', 'par conséquent'] },
+    judgePick: 'A',
+    A: { model: 'GPT', judgeLevel: 5, judgeDir: 'On target', estLevel: 'B2', estReg: 'semi-formal', chips: [['408 words', 1], ['17.9 / sentence', 1], ['4 paragraphs', 1], ['3 connectors', 1]],
+      text: "Le mois dernier, le conseil municipal a proposé de fermer le centre-ville aux voitures le week-end. Certains commerçants s'inquiètent, mais je pense que cette idée mérite notre soutien.\n\nDe plus, des rues plus calmes rendraient le centre plus agréable pour les familles, qui l'évitent souvent aujourd'hui à cause du bruit et de la circulation." },
+    B: { model: 'Mistral', judgeLevel: 2, judgeDir: 'Too hard', estLevel: 'C1', estReg: 'formal', chips: [['436 words', 0], ['21.4 / sentence', 0], ['5 paragraphs', 1], ['2 connectors', 1]],
+      text: "Résidant dans notre commune depuis deux décennies, j'ai observé l'inexorable croissance du trafic dans le centre historique. Contrairement aux appréhensions exprimées par certains commerçants, la piétonnisation ne précipiterait nullement le déclin du commerce local." }
+  }
+};
+const THEMES = ['Environnement', 'Logement', 'Travail', 'Santé', 'Voyages', 'Éducation', 'Culture', 'Technologies'];
+const TYPES = ["Texte d'opinion", 'Courriel personnel', 'Article', 'Témoignage', 'Récit', 'Compte rendu', 'Lettre formelle'];
+const BRIEFS = [['Environnement', "Texte d'opinion", 'Un habitant écrit au journal local pour défendre un centre-ville sans voitures.'], ['Logement', 'Courriel personnel', 'Une étudiante écrit à une amie pour raconter son emménagement en colocation.'], ['Travail', 'Témoignage', 'Un employé raconte à un magazine sa première semaine dans un nouveau poste.']];
+const ERRORS = ['Vocabulary too hard', 'Structure too complex', 'Information lost', 'Addition', 'Misinterpretation', 'Unnatural text', 'Coherence break', 'Presented as real (generation)'];
+const REGISTERS = ['Informal', 'Neutral', 'Formal', 'Literary'];
+const JUDGE = 'Claude';
+const PAIRS = [['Mistral', 'Qwen'], ['GPT', 'Mistral'], ['GPT', 'Qwen']];
+
+let S;
+function newTask(key) {
+  S.seq += 1;
+  const t = JSON.parse(JSON.stringify(SAMPLE[key]));
+  return Object.assign(t, { id: S.seq, created: new Date().toISOString(), simulated: true,
+    ev: { r: {}, reg: {}, err: { A: [], B: [] }, best: null, why: '' }, ag: {}, your: '', sent: { A: false, B: false }, status: 'to-evaluate' });
+}
+const DEFAULT_MODELS = [
+  { role: 'Generator', model: 'Mistral', providerType: 'openrouter', modelId: '' },
+  { role: 'Generator', model: 'GPT', providerType: 'openrouter', modelId: '' },
+  { role: 'Generator', model: 'Qwen', providerType: 'openrouter', modelId: '' },
+  { role: 'Judge', model: 'Claude', providerType: 'openrouter', modelId: '' }];
+function fixSettings(st) {
+  st.models = (st.models || JSON.parse(JSON.stringify(DEFAULT_MODELS))).filter(m => m.role !== 'Reserve').map((m, i) => Object.assign({}, DEFAULT_MODELS[i] || {}, { role: m.role, model: m.model, providerType: m.providerType || (DEFAULT_MODELS[i] || {}).providerType || 'openrouter', modelId: m.modelId || m.version || '', priceIn: m.priceIn || '', priceOut: m.priceOut || '', priceAuto: !!m.priceAuto }));
+  if (typeof st.temperature !== 'number') st.temperature = 0.7;
+  if (!st.role) st.role = 'admin';
+  if (!st.batchSeq) st.batchSeq = 0;
+  if (!st.installId) st.installId = Math.random().toString(36).slice(2, 8);
+  return st;
+}
+function uiDefaults() {
+  return { view: 'home', current: null, homeTab: 'all', newMode: null, toast: '', err: '', yourErr: '', formErr: '', animate: false, confirmWipe: false, confirmDel: null, judging: {}, judgeErr: {},
+    file: null, theme: BRIEFS[0][0], themeOther: '', type: BRIEFS[0][1], typeOther: '', situation: BRIEFS[0][2], brief: 0, level: null, srcLevel: 'C1', srcLevelSource: 'given', estimating: false, estimate: null, pair: 'Auto', busy: false, testMsg: {} };
+}
+function seedDemo() {
+  S.seq = 10; S.tasks = [];
+  const d1 = newTask('FR-Generate'); d1.status = 'done'; d1.ev.best = 'A';
+  const d2 = newTask('FR-Adapt'); d2.status = 'adapting'; d2.ev.best = 'B';
+  const p1 = newTask('FR-Adapt'); const p2 = newTask('FR-Generate');
+  S.tasks = [d1, d2, p1, p2];
+}
+function init() {
+  S = Object.assign(uiDefaults(), { seq: 10, tasks: [], settings: { language: 'French', annotator: '', models: JSON.parse(JSON.stringify(DEFAULT_MODELS)) }, keys: loadKeys() });
+  seedDemo(); render();
+}
+
+/* ---------- Storage: IndexedDB, falls back to localStorage, then memory ---------- */
+const APP_ID = 'Adapt-CEFR', APP_IDS = ['Adapt-CEFR', 'CEFR-ObTIC']; /* files from the former name stay readable */
+const DB_NAME = 'cefr-obtic', STORE = 'kv', SCHEMA = 1, LS_STATE = 'cefr-obtic-state', LS_KEYS = 'cefr-obtic-keys';
+let STORAGE = 'indexeddb', dbHandle = null;
+function openDb() {
+  return new Promise((res, rej) => {
+    if (!window.indexedDB) return rej(new Error('IndexedDB unavailable'));
+    const r = indexedDB.open(DB_NAME, 1);
+    r.onupgradeneeded = () => r.result.createObjectStore(STORE);
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  });
+}
+function dbReq(mode, fn) {
+  return new Promise((res, rej) => { const tx = dbHandle.transaction(STORE, mode); const q = fn(tx.objectStore(STORE)); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); });
+}
+function snapshot() { return { schema: SCHEMA, app: APP_ID, savedAt: new Date().toISOString(), seq: S.seq, settings: S.settings, tasks: S.tasks }; }
+async function loadData() {
+  try { dbHandle = await openDb(); const d = await dbReq('readonly', st => st.get('state')); return d || null; }
+  catch (e) {
+    try { STORAGE = 'local'; const raw = localStorage.getItem(LS_STATE); return raw ? JSON.parse(raw) : null; }
+    catch (e2) { STORAGE = 'memory'; return null; }
+  }
+}
+async function persist() {
+  const data = snapshot();
+  try {
+    if (STORAGE === 'indexeddb') await dbReq('readwrite', st => st.put(data, 'state'));
+    else if (STORAGE === 'local') localStorage.setItem(LS_STATE, JSON.stringify(data));
+  } catch (e) { STORAGE = STORAGE === 'indexeddb' ? 'local' : 'memory'; if (STORAGE === 'local') persist(); renderNav(); }
+}
+let saveTimer = null;
+function save() { clearTimeout(saveTimer); saveTimer = setTimeout(persist, 200); }
+function loadKeys() { try { return JSON.parse(localStorage.getItem(LS_KEYS) || '{}'); } catch (e) { return {}; } }
+function saveKeys() { if (!S.keysSaved) return; try { localStorage.setItem(LS_KEYS, JSON.stringify(S.keys)); } catch (e) { /* keys stay in memory only */ } }
+function keysStored() { try { return !!localStorage.getItem(LS_KEYS); } catch (e) { return false; } }
+function applyData(d) {
+  S.seq = d.seq || 0; S.tasks = Array.isArray(d.tasks) ? d.tasks : [];
+  S.settings = fixSettings(Object.assign({ language: 'French', annotator: '', models: JSON.parse(JSON.stringify(DEFAULT_MODELS)) }, d.settings || {}));
+}
+async function boot() {
+  S = Object.assign(uiDefaults(), { seq: 0, tasks: [], settings: fixSettings({ language: 'French', annotator: '', models: JSON.parse(JSON.stringify(DEFAULT_MODELS)) }), keys: loadKeys(), keysSaved: keysStored() });
+  const d = await loadData();
+  if (d && d.schema) { applyData(d); if (S.settings.roleChosen === undefined) S.settings.roleChosen = true; } /* existing installations keep their role */
+  else S.settings.roleChosen = false;
+  if (!S.settings.demoRemoved) { S.tasks = S.tasks.filter(t => !(t.simulated && t.id >= 11 && t.id <= 14)); S.settings.demoRemoved = true; } /* drop the four demo tasks of earlier versions, once */
+  render();
+}
+function download(name, text, type) {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+const stamp = () => new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
+function wordDistance(a, b) {
+  const x = a.trim().split(/\s+/).filter(Boolean), y = b.trim().split(/\s+/).filter(Boolean);
+  let prev = Array.from({ length: y.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= x.length; i++) { const cur2 = [i]; for (let j = 1; j <= y.length; j++) cur2[j] = Math.min(prev[j] + 1, cur2[j - 1] + 1, prev[j - 1] + (x[i - 1] === y[j - 1] ? 0 : 1)); prev = cur2; }
+  return prev[y.length];
+}
+function finalRecords(t) {
+  const own = t.status === 'done' ? [{ annotator: S.settings.annotator || null, ev: t.ev, your: t.your, finalSide: t.finalSide || null, dist: t.dist, sent: t.sent, validatedAt: t.validatedAt }] : [];
+  return own.concat(Object.entries(t.annotations || {}).filter(([, a]) => a.status === 'done').map(([n, a]) => Object.assign({ annotator: n }, a)));
+}
+function corpusJsonl() {
+  return S.tasks.flatMap(t => finalRecords(t).map(a => ({ t, a }))).map(({ t, a }) => JSON.stringify({
+    task_id: t.id, task_uid: t.uid || null, batch: t.batch || null, language: S.settings.language, mode: t.mode === 'Adapt' ? 'adapt' : 'generate',
+    origin: t.mode === 'Adapt' ? 'authentic_adaptation' : 'synthetic',
+    source_level: t.srcLevel === 'Unknown' ? null : t.srcLevel || null, source_level_source: t.srcLevelSource || (t.srcLevel ? 'given' : null), source_level_estimate: t.srcEstimate ? { level: t.srcEstimate.level, reason: t.srcEstimate.reason, model: t.srcEstimate.model, prompt_version: t.srcEstimate.promptVersion || null, profile_version: t.srcEstimate.profileVersion || null, prompt: t.srcEstimate.prompt || null } : null, target_level: t.level, direction: t.dir,
+    source_or_brief: t.src, source_file: t.sourceFile || null,
+    final_text: a.your, versions: { A: { model: t.A.model, model_id: t.A.modelId || null, text: t.A.text, log: t.A.log ? Object.assign({}, t.A.log, { raw: undefined }) : null }, B: { model: t.B.model, model_id: t.B.modelId || null, text: t.B.text, log: t.B.log ? Object.assign({}, t.B.log, { raw: undefined }) : null } },
+    prompt: t.prompt || null, prompt_version: t.promptVersion || null, profile_version: t.profileVersion || null,
+    evaluation: { annotator: a.annotator, ratings: a.ev.r, best: a.ev.best, best_overridden: !!a.ev.bestManual, blind: a.ev.blind !== false, why: a.ev.why || null, validated_at: a.ev.validatedAt || null },
+    judge: t.judge ? { model: t.judge.model, version: t.judge.version, A: t.judge.A, B: t.judge.B, best: t.judge.best, consistent: t.judge.consistent, reasons: t.judge.runs.map(r => r.order + ': ' + r.reason) } : t.judgePick ? { model: JUDGE, simulated: true, A: { level: t.A.judgeLevel, dir: t.A.judgeDir }, B: { level: t.B.judgeLevel, dir: t.B.judgeDir }, best: t.judgePick } : null,
+    costs_usd: (c => ({ total: c.total.usd, total_kind: c.total.kind, generation_A: c.A ? c.A.usd : null, generation_B: c.B ? c.B.usd : null, judge: c.judge.usd, source_level_estimate: c.estimate ? c.estimate.usd : null }))(taskCosts(t)),
+    judge_final: (() => { const f = t.judge && t.judge.finals && t.judge.finals[a.annotator || 'administrator']; return f && f.text === a.your ? { level: f.level, dir: f.dir, meaning_or_brief: f.crit2, grammar: f.grammar, reason: f.reason, model: f.model, version: f.version } : null; })(),
+    final_from: a.finalSide || null, edit_distance_words: a.dist || null, created: t.created || null, validated_at: a.validatedAt || null,
+    simulated_generation: !!t.simulated })).join('\n') + '\n';
+}
+
+/* ========== Step 2: level profiles, prompts and model calls ========== */
+const PROFILES = {
+  A1: { words: [100, 120], avg: 7, paras: [2, 3], vocab: { French: 'environ 1 000 mots courants', English: 'about 1,000 common words' },
+    conn: { French: ['et', 'mais'], English: ['and', 'but'] }, reg: { French: 'familier, usage quotidien', English: 'informal, everyday use' },
+    gram: { French: 'phrases simples sujet-verbe-complément, présent, négation « ne… pas », questions simples ; pas de passé, de futur ni de subordonnées', English: 'simple subject-verb-object sentences, present tense, basic negations and questions; no past or future tenses, no compound sentences' },
+    avoid: { French: 'vocabulaire complexe, sujets abstraits', English: 'complex vocabulary, abstract topics' } },
+  A2: { words: [200, 220], avg: 10, paras: [2, 3], vocab: { French: '1 000 à 2 000 mots fréquents', English: '1,000-2,000 frequent words' },
+    conn: { French: ['puis', 'ensuite', 'parce que', 'donc', 'alors'], English: ['then', 'next', 'because', 'so'] }, reg: { French: 'familier ou neutre', English: 'informal or neutral' },
+    gram: { French: 'phrases simples et coordonnées ; présent, passé composé, imparfait de description, futur proche et simple, impératif ; relatives avec « qui » et « que »', English: 'simple and compound sentences; present, past and future tenses, imperative; basic conjunctions such as because and so' },
+    avoid: { French: 'vocabulaire spécialisé, propositions complexes, temps avancés, registre formel', English: 'specialised vocabulary, complex clauses, advanced tenses, formal register' } },
+  B1: { words: [300, 320], avg: 12, paras: [3, 4], vocab: { French: '2 000 à 5 000 mots, expressions idiomatiques simples', English: '2,000-5,000 words, simple idiomatic expressions' },
+    conn: { French: ['cependant', 'pourtant', 'par conséquent', 'donc', "c'est pourquoi"], English: ['however', 'therefore'] }, reg: { French: 'neutre ou semi-formel', English: 'neutral or semi-formal' },
+    gram: { French: 'phrases complexes ; conditionnel présent, subjonctif présent dans des contextes familiers, passif, relatives fréquentes', English: 'complex sentences; conditional, subjunctive in familiar contexts, passive voice, frequent relative clauses' },
+    avoid: { French: 'vocabulaire technique, subjonctif avancé, subordonnées imbriquées, style formel', English: 'technical vocabulary, advanced subjunctive, deeply nested clauses, formal style' } },
+  B2: { words: [400, 420], avg: 20, paras: [3, 6], vocab: { French: '5 000 à 10 000 mots, vocabulaire des sujets abstraits', English: '5,000-10,000 words, vocabulary for abstract topics' },
+    conn: { French: ['de plus', 'en revanche', 'en outre', 'au contraire'], English: ['moreover', 'in contrast'] }, reg: { French: 'semi-formel ou formel', English: 'semi-formal or formal' },
+    gram: { French: 'subordonnées complexes ; conditionnel et subjonctif en contexte abstrait, passif, discours indirect ; paragraphes de 5 à 6 phrases', English: 'complex subordinate clauses; conditional and subjunctive in abstract contexts, passive voice, indirect speech; paragraphs of 5-6 sentences' },
+    avoid: { French: 'termes trop techniques, structures rares, phrases alambiquées, ton académique', English: 'overly technical terms, rare structures, convoluted sentences, academic tone' } },
+  C1: { words: [500, 520], avg: 25, paras: [4, 5], vocab: { French: '10 000 à 20 000 mots, vocabulaire spécialisé et nuancé', English: '10,000-20,000 words, specialised and nuanced vocabulary' },
+    conn: { French: ['néanmoins', "d'un autre côté", 'toutefois', 'par ailleurs'], English: ['nonetheless', 'on the other hand'] }, reg: { French: 'formel ou académique', English: 'formal or academic' },
+    gram: { French: 'structures avancées ; futur antérieur, subjonctif passé, grande variété de formes et de voix', English: 'advanced structures; future perfect, past subjunctive, wide variety of verb forms and voices' },
+    avoid: { French: 'termes de niche, complexité inutile, sujets banals', English: 'niche technical terms, unnecessary complexity, trivial topics' } },
+  C2: { words: [600, 650], avg: 30, paras: [5, 6], vocab: { French: 'maîtrise complète, y compris termes techniques et académiques', English: 'full range, including technical and academic terms' },
+    conn: { French: ['dans la mesure où', 'tandis que'], English: ['insofar as', 'whereas'] }, reg: { French: 'très formel ou littéraire', English: 'highly formal or literary' },
+    gram: { French: 'toutes les structures, temps et modes complexes employés avec précision', English: 'all grammatical structures, complex tenses and moods used precisely' },
+    avoid: { French: 'vocabulaire de base, phrases simples, sujets triviaux, registre familier', English: 'basic vocabulary, simple sentences, trivial topics, informal register' } }
+};
+const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+const PROFILE_VERSION = 'profiles-1.0';
+/* Level profiles: editable in Settings, versioned like the prompt. */
+const activeProfiles = () => S.settings.profiles || PROFILES;
+const profileVersion = () => S.settings.profileVersion || PROFILE_VERSION;
+const PROF_NUM = [['w0', 'Words min'], ['w1', 'Words max'], ['p0', 'Paragraphs min'], ['p1', 'Paragraphs max'], ['avg', 'Average sentence (words, max.)']];
+const PROF_TXT = [['vocab', 'Vocabulary'], ['gram', 'Grammar'], ['reg', 'Register'], ['conn', 'Connectors (comma-separated)'], ['avoid', 'Avoid']];
+function profGet(P, k, L) { return { w0: P.words[0], w1: P.words[1], p0: P.paras[0], p1: P.paras[1], avg: P.avg }[k] ?? (k === 'conn' ? P.conn[L].join(', ') : P[k][L]); }
+function profSet(P, k, L, v) {
+  if (k === 'w0') P.words[0] = v; else if (k === 'w1') P.words[1] = v; else if (k === 'p0') P.paras[0] = v; else if (k === 'p1') P.paras[1] = v; else if (k === 'avg') P.avg = v;
+  else if (k === 'conn') P.conn[L] = v.split(',').map(x => x.trim()).filter(Boolean); else P[k][L] = v;
+}
+function profileCard() {
+  const L = S.settings.language, D = S.profDraft || (S.profDraft = JSON.parse(JSON.stringify(activeProfiles()))), lv = S.profLevel || 'B1', P = D[lv];
+  const changed = JSON.stringify(D) !== JSON.stringify(activeProfiles()), isDefault = JSON.stringify(activeProfiles()) === JSON.stringify(PROFILES), ro = isAdmin() ? '' : 'readonly';
+  const hist = S.settings.profileHistory || [];
+  return `<details class="card" ${S.profOpen ? 'open' : ''} id="profBox"><summary style="cursor:pointer"><h2 style="display:inline">Level profiles</h2> <span class="chip">${profileVersion()}</span> <span class="muted">${isAdmin() ? (isDefault ? 'default' : 'edited') + (changed ? ' · unsaved changes' : '') : 'read only'}</span></summary>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px">
+    <span class="muted" style="font-size:13px">${isAdmin() ? `Target values for each level: they fill the prompt variables and the counts under each text, and annotators see them here (read only). Text fields are for the ${L} corpus; numbers apply to both languages. Each saved change creates a new version, logged with every text generated.` : 'Target values for each level, set by the administrator: use them when you rate the level. The counts under each text are checked against them.'}</span>
+    <div class="row" style="gap:6px" role="group" aria-label="Level to edit">${LEVELS.map(l => `<button class="opt ${lv === l ? 'on' : ''}" aria-pressed="${lv === l}" data-proflv="${l}">${l}</button>`).join('')}</div>
+    <div class="grid3" style="grid-template-columns:repeat(5,minmax(0,1fr))">${PROF_NUM.map(([k, label]) => `<label class="f">${label}<input type="number" min="1" data-prof="${k}" value="${profGet(P, k, L)}" ${ro} style="height:36px"></label>`).join('')}</div>
+    ${PROF_TXT.map(([k, label]) => `<label class="f">${label}<textarea data-prof="${k}" rows="2" ${ro} style="font-size:13px;line-height:1.5;padding:8px;border:1px solid var(--line2);border-radius:8px;resize:vertical">${esc(profGet(P, k, L))}</textarea></label>`).join('')}
+    ${isAdmin() ? `<div class="row">${S.profErr ? `<span class="err">${esc(S.profErr)}</span>` : ''}
+      <button class="btn primary" data-profsave="1" ${changed ? '' : 'disabled'}>Save as new version</button>
+      <button class="btn" data-profdiscard="1" ${changed ? '' : 'disabled'}>Discard changes</button>
+      <button class="btn" data-profreset="1" ${isDefault && !changed ? 'disabled' : ''}>Back to default</button></div>` : ''}
+    ${isAdmin() && hist.length ? `<span class="muted" style="font-size:12px">History: ${hist.map(h => `${h.version} (${h.date.slice(0, 10)})`).join(' · ')}</span>` : ''}</div></details>`;
+}
+function saveProfiles(D) {
+  for (const l of LEVELS) { const P = D[l];
+    if ([P.words[0], P.words[1], P.paras[0], P.paras[1], P.avg].some(x => !Number.isInteger(x) || x < 1)) return S.profErr = `${l}: numbers must be whole numbers of 1 or more.`, false;
+    if (P.words[0] > P.words[1] || P.paras[0] > P.paras[1]) return S.profErr = `${l}: the minimum is above the maximum.`, false;
+    if (!P.conn[S.settings.language].length) return S.profErr = `${l}: give at least one connector.`, false; }
+  S.settings.profileHistory = S.settings.profileHistory || [];
+  const v = 'profiles-1.' + (S.settings.profileHistory.length + 1);
+  S.settings.profiles = JSON.parse(JSON.stringify(D)); S.settings.profileVersion = v;
+  S.settings.profileHistory.push({ version: v, date: new Date().toISOString(), profiles: JSON.parse(JSON.stringify(D)) });
+  S.profDraft = null; S.profErr = ''; return v;
+}
+function targetOf(level, lang) { const P = activeProfiles()[level]; return { min: P.words[0], max: P.words[1], avg: P.avg, pmin: P.paras[0], pmax: P.paras[1], conn: P.conn[lang] }; }
+function countsChips(text, T) {
+  const y = (text || '').trim();
+  const w = y ? y.split(/\s+/).length : 0, s = y ? y.split(/[.!?…]+/).filter(x => x.trim()).length : 0;
+  const p = y ? y.split(/\n\s*\n/).filter(x => x.trim()).length : 0, a = s ? Math.round(w / s * 10) / 10 : 0;
+  const c = T.conn.filter(x => new RegExp('(^|[^\\p{L}])' + x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '([^\\p{L}]|$)', 'iu').test(y)).length;
+  return [[w + ' words', w >= T.min && w <= T.max ? 1 : 0], [a + ' / sentence', s > 0 && a <= T.avg ? 1 : 0], [p + (p === 1 ? ' paragraph' : ' paragraphs'), p >= T.pmin && p <= T.pmax ? 1 : 0], [c + (c === 1 ? ' connector' : ' connectors'), c >= 1 ? 1 : 0]];
+}
+/* Prompt templates: editable in Settings, versioned. {variables} are filled from the target level profile and the task. */
+const PROMPT_VARS = ['level', 'source_level', 'direction', 'source', 'words_min', 'words_max', 'paragraphs_min', 'paragraphs_max', 'vocabulary', 'grammar', 'sentence_avg', 'register', 'connectors', 'avoid', 'theme', 'text_type', 'situation', 'language', 'profiles', 'text'];
+const PROMPT_FIELDS = [['system', 'System message'], ['adapt', 'Adaptation (load a text)'], ['simplify', '{direction} when simplifying'], ['enrich', '{direction} when complexifying'], ['neutral', '{direction} when adapting (source level unknown or equal to the target)'], ['generate', 'Generation (brief)'], ['estimate_system', 'Level estimate: system message'], ['estimate', 'Level estimate (Unknown? Estimate with the LLM)']];
+const DEFAULT_PROMPTS = {
+  French: {
+    system: "Tu es spécialiste de l'adaptation de textes pour l'apprentissage du français langue étrangère. Les textes que tu produis servent à des activités de compréhension écrite : ils doivent être autonomes et compréhensibles sans le texte d'origine.",
+    adapt: "Adapte le texte ci-dessous au niveau {level} du CECR.\n{direction}\nLongueur : {words_min} à {words_max} mots, en {paragraphs_min} à {paragraphs_max} paragraphes séparés par une ligne vide.\nVocabulaire : {vocabulary}.\nGrammaire : {grammar}.\nPhrases d'environ {sentence_avg} mots en moyenne au plus.\nRegistre : {register}. Connecteurs à privilégier : {connectors}.\nÀ éviter : {avoid}.\n\nTexte source :\n\"\"\"\n{source}\n\"\"\"\n\nRéponds uniquement par le texte, en texte brut, sans titre ni commentaire.",
+    simplify: "Le texte source est plus complexe que le niveau visé : simplifie-le. Si la longueur l'exige, garde l'essentiel. Ne contredis jamais le texte source.",
+    enrich: "Le texte source est plus simple que le niveau visé : enrichis-le. Tu peux ajouter des explications, des exemples, des reformulations, des transitions, mais aucun fait nouveau : ni nom, ni chiffre, ni date, ni événement, ni citation absents du texte source.",
+    neutral: "Ajuste le texte source au niveau visé et à son profil : simplifie-le s'il est plus complexe, enrichis-le s'il est plus simple, et respecte la longueur, les paragraphes et les connecteurs indiqués. Pour enrichir, tu peux ajouter des explications, des exemples, des reformulations, des transitions, mais aucun fait nouveau : ni nom, ni chiffre, ni date, ni événement, ni citation absents du texte source. Ne contredis jamais le texte source.",
+    generate: "Rédige un texte original en français, de niveau {level} du CECR.\nType de texte : {text_type}. Thème : {theme}.\nSituation : {situation}\nLes personnes, lieux et chiffres sont inventés ; rien n'est présenté comme un fait réel.\nLongueur : {words_min} à {words_max} mots, en {paragraphs_min} à {paragraphs_max} paragraphes séparés par une ligne vide.\nVocabulaire : {vocabulary}.\nGrammaire : {grammar}.\nPhrases d'environ {sentence_avg} mots en moyenne au plus.\nRegistre : {register}. Connecteurs à privilégier : {connectors}.\nÀ éviter : {avoid}.\n\nRéponds uniquement par le texte, en texte brut, sans titre ni commentaire.",
+    estimate_system: 'You are an expert in CEFR level assessment of reading texts for learners of a foreign language. Reply with JSON only, no other text.',
+    estimate: "Estimate the CEFR level (A1 to C2) of the {language} text below, as a reading text for learners of {language} as a foreign language. Use the level profiles below as the reference: compare the text with each profile (vocabulary, grammar, sentence length, paragraphs, connectors, register) and choose the closest level. Length alone does not decide the level.\n\nLevel profiles:\n{profiles}\n\nText:\n<<<\n{text}\n>>>\n\nJSON format: {\"level\": \"A1\" | \"A2\" | \"B1\" | \"B2\" | \"C1\" | \"C2\", \"reason\": \"one short sentence\"}"
+  },
+  English: {
+    system: 'You are a specialist in adapting texts for learners of English as a foreign language. Your texts are used for reading comprehension: they must stand alone and be understandable without the original text.',
+    adapt: 'Adapt the text below to CEFR level {level}.\n{direction}\nLength: {words_min} to {words_max} words, in {paragraphs_min} to {paragraphs_max} paragraphs separated by a blank line.\nVocabulary: {vocabulary}.\nGrammar: {grammar}.\nSentences of about {sentence_avg} words on average at most.\nRegister: {register}. Preferred connectors: {connectors}.\nAvoid: {avoid}.\n\nSource text:\n"""\n{source}\n"""\n\nReply with the text only, as plain text, with no title or comment.',
+    simplify: 'The source text is harder than the target level: simplify it. If the length requires it, keep the essentials. Never contradict the source text.',
+    enrich: 'The source text is easier than the target level: enrich it. You may add explanations, examples, rephrasing and transitions, but no new facts: no names, figures, dates, events or quotes absent from the source.',
+    neutral: 'Fit the source text to the target level and its profile: simplify it if it is harder, enrich it if it is easier, and follow the length, paragraphs and connectors given. When enriching, you may add explanations, examples, rephrasing and transitions, but no new facts: no names, figures, dates, events or quotes absent from the source. Never contradict the source text.',
+    generate: 'Write an original text in English at CEFR level {level}.\nText type: {text_type}. Theme: {theme}.\nSituation: {situation}\nPeople, places and figures are invented; nothing is presented as a real fact.\nLength: {words_min} to {words_max} words, in {paragraphs_min} to {paragraphs_max} paragraphs separated by a blank line.\nVocabulary: {vocabulary}.\nGrammar: {grammar}.\nSentences of about {sentence_avg} words on average at most.\nRegister: {register}. Preferred connectors: {connectors}.\nAvoid: {avoid}.\n\nReply with the text only, as plain text, with no title or comment.',
+    estimate_system: 'You are an expert in CEFR level assessment of reading texts for learners of a foreign language. Reply with JSON only, no other text.',
+    estimate: "Estimate the CEFR level (A1 to C2) of the {language} text below, as a reading text for learners of {language} as a foreign language. Use the level profiles below as the reference: compare the text with each profile (vocabulary, grammar, sentence length, paragraphs, connectors, register) and choose the closest level. Length alone does not decide the level.\n\nLevel profiles:\n{profiles}\n\nText:\n<<<\n{text}\n>>>\n\nJSON format: {\"level\": \"A1\" | \"A2\" | \"B1\" | \"B2\" | \"C1\" | \"C2\", \"reason\": \"one short sentence\"}"
+  }
+};
+const currentPrompts = () => Object.assign({}, DEFAULT_PROMPTS[S.settings.language], (S.settings.prompts && S.settings.prompts[S.settings.language]) || {});
+const promptVersion = () => (S.settings.promptVersions && S.settings.promptVersions[S.settings.language]) || 'prompt-1.0';
+const fillPrompt = (tpl, vars) => tpl.replace(/\{(\w+)\}/g, (m, k) => vars[k] !== undefined ? vars[k] : m);
+function unknownVars(T) { const bad = new Set(); Object.values(T).forEach(x => (x.match(/\{(\w+)\}/g) || []).forEach(m => { if (!PROMPT_VARS.includes(m.slice(1, -1))) bad.add(m); })); return [...bad]; }
+function buildPrompt(spec) {
+  const L = S.settings.language, P = activeProfiles()[spec.level], T = currentPrompts();
+  const vars = { level: spec.level, source_level: spec.srcLevel === 'Unknown' ? '' : spec.srcLevel || '', words_min: P.words[0], words_max: P.words[1], paragraphs_min: P.paras[0], paragraphs_max: P.paras[1],
+    vocabulary: P.vocab[L], grammar: P.gram[L], sentence_avg: P.avg, register: P.reg[L], connectors: P.conn[L].join(', '), avoid: P.avoid[L] };
+  let user;
+  if (spec.mode === 'Adapt') {
+    const dir = spec.direction || (LEVELS.indexOf(spec.level) < LEVELS.indexOf(spec.srcLevel) ? 'simplification' : 'complexification');
+    vars.direction = fillPrompt(dir === 'simplification' ? T.simplify : dir === 'complexification' ? T.enrich : T.neutral, vars); vars.source = spec.source;
+    user = fillPrompt(T.adapt, vars);
+  } else {
+    Object.assign(vars, { theme: spec.brief.theme, text_type: spec.brief.type, situation: spec.brief.situation });
+    user = fillPrompt(T.generate, vars);
+  }
+  return { system: fillPrompt(T.system, vars), user, version: promptVersion() };
+}
+function promptCard() {
+  const D = S.promptDraft || (S.promptDraft = Object.assign({}, currentPrompts()));
+  const changed = PROMPT_FIELDS.some(([k]) => D[k] !== currentPrompts()[k]);
+  const isDefault = PROMPT_FIELDS.every(([k]) => currentPrompts()[k] === DEFAULT_PROMPTS[S.settings.language][k]);
+  const hist = (S.settings.promptHistory || []).filter(h => h.language === S.settings.language);
+  return `<details class="card" ${S.promptOpen ? 'open' : ''} id="promptBox"><summary style="cursor:pointer"><h2 style="display:inline">Prompt</h2> <span class="chip">${promptVersion()}</span> <span class="muted">${S.settings.language} · ${isDefault ? 'default' : 'edited'}${changed ? ' · unsaved changes' : ''}</span></summary>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px">
+    <span class="muted" style="font-size:13px">Same prompt for both generators. Each saved change creates a new version, logged with every text generated. Calibrate on a few texts, then keep one version for the whole corpus.</span>
+    <span class="muted" style="font-size:12px">Variables: ${PROMPT_VARS.map(v => '<code>{' + v + '}</code>').join(' ')}</span>
+    ${PROMPT_FIELDS.map(([k, label]) => `<label class="f">${label}<textarea data-pf="${k}" rows="${k === 'adapt' || k === 'generate' || k === 'estimate' ? 12 : 3}" style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:1.5;padding:8px;border:1px solid var(--line2);border-radius:8px;resize:vertical">${esc(D[k])}</textarea></label>`).join('')}
+    <div class="row">${S.promptErr ? `<span class="err">${esc(S.promptErr)}</span>` : ''}
+      <button class="btn primary" data-psave="1" ${changed ? '' : 'disabled'}>Save as new version</button>
+      <button class="btn" data-pdiscard="1" ${changed ? '' : 'disabled'}>Discard changes</button>
+      <button class="btn" data-preset="1" ${isDefault && !changed ? 'disabled' : ''}>Back to default</button></div>
+    ${hist.length ? `<span class="muted" style="font-size:12px">History: ${hist.map(h => `${h.version} (${h.date.slice(0, 10)})`).join(' · ')}</span>` : ''}</div></details>`;
+}
+function savePrompts(T) {
+  const L = S.settings.language, bad = unknownVars(T);
+  if (bad.length) { S.promptErr = 'Unknown variable: ' + bad.join(', '); return false; }
+  S.settings.prompts = S.settings.prompts || {}; S.settings.promptVersions = S.settings.promptVersions || {}; S.settings.promptHistory = S.settings.promptHistory || [];
+  const n = S.settings.promptHistory.filter(h => h.language === L).length + 1, v = 'prompt-1.' + n;
+  S.settings.prompts[L] = Object.assign({}, T); S.settings.promptVersions[L] = v;
+  S.settings.promptHistory.push({ language: L, version: v, date: new Date().toISOString(), templates: Object.assign({}, T) });
+  S.promptDraft = Object.assign({}, T); S.promptErr = ''; return v;
+}
+const PROVIDERS = {
+  openrouter: { label: 'OpenRouter', url: 'https://openrouter.ai/api/v1/chat/completions', kind: 'openai' },
+  openai: { label: 'OpenAI', url: 'https://api.openai.com/v1/chat/completions', kind: 'openai' },
+  mistral: { label: 'Mistral API', url: 'https://api.mistral.ai/v1/chat/completions', kind: 'openai' },
+  anthropic: { label: 'Anthropic', url: 'https://api.anthropic.com/v1/messages', kind: 'anthropic' },
+  ollama: { label: 'Ollama (local)', url: 'http://localhost:11434/api/chat', kind: 'ollama' }
+};
+async function callModel(m, system, user, opts) {
+  const P = PROVIDERS[m.providerType], key = S.keys[m.model] || '', temperature = opts.temperature, seed = opts.seed;
+  if (!m.modelId) throw new Error('no model ID set in Settings');
+  if (P.kind !== 'ollama' && !key) throw new Error('no API key set in Settings');
+  let headers = { 'Content-Type': 'application/json' }, body;
+  if (P.kind === 'openai') {
+    headers.Authorization = 'Bearer ' + key;
+    body = { model: m.modelId, temperature, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] };
+    if (m.providerType === 'mistral') body.random_seed = seed; else body.seed = seed;
+    if (opts.maxTokens) body.max_tokens = opts.maxTokens; /* otherwise no cap: reasoning models and long texts need room */
+    if (m.providerType === 'openrouter') body.reasoning = { effort: 'low', exclude: true };
+  } else if (P.kind === 'anthropic') {
+    headers['x-api-key'] = key; headers['anthropic-version'] = '2023-06-01'; headers['anthropic-dangerous-direct-browser-access'] = 'true';
+    body = { model: m.modelId, temperature, max_tokens: opts.maxTokens || 16000, system, messages: [{ role: 'user', content: user }] };
+  } else {
+    body = { model: m.modelId, stream: false, options: { temperature, seed }, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] };
+  }
+  const t0 = performance.now();
+  let res;
+  try { res = await fetch(P.url, { method: 'POST', headers, body: JSON.stringify(body) }); }
+  catch (e) { throw new Error(P.kind === 'ollama' ? 'cannot reach Ollama (is it running with OLLAMA_ORIGINS=*?)' : 'network or CORS error (the browser could not reach ' + P.label + ')'); }
+  const raw = await res.text(); let data = null; try { data = JSON.parse(raw); } catch (e) { /* not JSON */ }
+  if (!res.ok) throw new Error(`HTTP ${res.status}: ` + ((data && (data.error && (data.error.message || data.error) || data.message)) || raw.slice(0, 200)));
+  const text = P.kind === 'openai' ? data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content
+    : P.kind === 'anthropic' ? (data.content || []).filter(c => c.type === 'text').map(c => c.text).join('')
+    : data.message && data.message.content;
+  if (!text) {
+    const fin = P.kind === 'openai' && data.choices && data.choices[0] && data.choices[0].finish_reason;
+    throw new Error(fin === 'length' ? 'empty answer: token limit reached during reasoning (reasoning model?)' : 'empty answer');
+  }
+  const u = (data && data.usage) || {};
+  const usage = P.kind === 'ollama' ? { in: data.prompt_eval_count || 0, out: data.eval_count || 0, charged: 0 }
+    : { in: u.prompt_tokens ?? u.input_tokens ?? 0, out: u.completion_tokens ?? u.output_tokens ?? 0, charged: typeof u.cost === 'number' ? u.cost : null };
+  return { text: String(text).trim(), raw, latencyMs: Math.round(performance.now() - t0), returnedModel: (data && data.model) || m.modelId, usage, cost: costOf(m, usage) };
+}
+/* Cost of one call: the amount charged by OpenRouter when it is returned, otherwise tokens x the prices set in Settings. */
+function costOf(m, usage) {
+  if (usage.charged !== null && usage.charged !== undefined) return { usd: usage.charged, kind: m.providerType === 'ollama' ? 'local' : 'charged', in: usage.in, out: usage.out };
+  const pi = parseFloat(m.priceIn), po = parseFloat(m.priceOut);
+  if (!isNaN(pi) && !isNaN(po)) return { usd: usage.in / 1e6 * pi + usage.out / 1e6 * po, kind: 'estimated', in: usage.in, out: usage.out };
+  return { usd: null, kind: 'unknown', in: usage.in, out: usage.out };
+}
+const sumCosts = list => { const v = list.filter(c => c && c.usd !== null && c.usd !== undefined); return { usd: v.length ? v.reduce((a, c) => a + c.usd, 0) : null, kind: !v.length ? 'unknown' : v.every(c => c.kind === 'charged' || c.kind === 'local') ? 'charged' : 'estimated', missing: list.filter(c => !c || c.usd === null || c.usd === undefined).length }; };
+const fmtUsd = x => x === null || x === undefined ? '—' : '$' + (x < 0.01 ? x.toFixed(5) : x.toFixed(3));
+/* Costs of one text: both generations, the LLM judge (both readings and the final versions) and the source-level estimate. */
+function taskCosts(t) {
+  const gen = ['A', 'B'].map(v => t[v] && t[v].log && t[v].log.cost).filter(Boolean);
+  const judge = t.judge ? (t.judge.runs || []).map(r => r.cost).concat(Object.values(t.judge.finals || {}).map(f => f.cost)).filter(Boolean) : [];
+  const est = t.srcEstimate && t.srcEstimate.cost ? [t.srcEstimate.cost] : [];
+  return { A: t.A && t.A.log ? t.A.log.cost || null : null, B: t.B && t.B.log ? t.B.log.cost || null : null, judge: sumCosts(judge), estimate: est[0] || null, total: sumCosts(gen.concat(judge, est)) };
+}
+/* OpenRouter public price list, loaded once per session (no key needed). */
+let orPrices = null;
+function openRouterPrices() {
+  if (!orPrices) orPrices = fetch('https://openrouter.ai/api/v1/models').then(r => r.json()).then(j => { const map = {}; (j.data || []).forEach(x => { if (x.pricing) map[x.id] = { in: parseFloat(x.pricing.prompt) * 1e6, out: parseFloat(x.pricing.completion) * 1e6 }; }); return map; }).catch(e => { orPrices = null; throw e; });
+  return orPrices;
+}
+const priceTxt = x => isNaN(x) ? '' : String(Math.round(x * 10000) / 10000);
+/* Model family, derived from the provider and the model ID (the Model column was removed). */
+const FAMILY = { openai: 'GPT', mistralai: 'Mistral', mistral: 'Mistral', qwen: 'Qwen', anthropic: 'Claude', 'meta-llama': 'Llama', google: 'Gemini', deepseek: 'DeepSeek', 'x-ai': 'Grok' };
+function familyOf(m) {
+  const id = (m.modelId || '').trim().toLowerCase();
+  if (!id) return m.model;
+  if (m.providerType === 'openrouter') { const pre = id.split('/')[0]; return FAMILY[pre] || pre.charAt(0).toUpperCase() + pre.slice(1); }
+  if (m.providerType === 'ollama') { const k = Object.keys({ llama: 1, qwen: 1, mistral: 1, gemma: 1, deepseek: 1, phi: 1 }).find(k => id.includes(k)); return k ? ({ llama: 'Llama', qwen: 'Qwen', mistral: 'Mistral', gemma: 'Gemma', deepseek: 'DeepSeek', phi: 'Phi' })[k] : id; }
+  return FAMILY[m.providerType] || id;
+}
+/* Name used for pairs, rotation and reveal: the family, or the exact model when two generators share a family. */
+function genName(m) {
+  const f = familyOf(m), same = S.settings.models.filter(x => x.role === 'Generator' && x.modelId && familyOf(x) === f);
+  return same.length > 1 ? m.modelId.split('/').pop() : f;
+}
+const readyGenerators = () => S.settings.models.filter(m => m.role === 'Generator' && m.modelId && (m.providerType === 'ollama' || S.keys[m.model]));
+function pickPair(choice) {
+  const gens = readyGenerators();
+  if (gens.length < 2) return null;
+  let pair;
+  if (choice && choice !== 'Auto') pair = choice.split(' vs ').map(n => gens.find(g => genName(g) === n)).filter(Boolean);
+  if (!pair || pair.length !== 2) {
+    const real = S.tasks.filter(t => !t.simulated && t.A && t.B), use = {};
+    real.forEach(t => { const k = [t.A.model, t.B.model].sort().join('|'); use[k] = (use[k] || 0) + 1; });
+    const pairs = []; for (let i = 0; i < gens.length; i++) for (let j = i + 1; j < gens.length; j++) pairs.push([gens[i], gens[j]]);
+    const min = Math.min(...pairs.map(p => use[[genName(p[0]), genName(p[1])].sort().join('|')] || 0));
+    const cands = pairs.filter(p => (use[[genName(p[0]), genName(p[1])].sort().join('|')] || 0) === min);
+    pair = cands[Math.floor(Math.random() * cands.length)];
+  }
+  const inA = n => S.tasks.filter(t => !t.simulated && t.A && t.A.model === n).length;
+  const [x, y] = pair, ax = inA(genName(x)), ay = inA(genName(y));
+  return ax < ay ? [x, y] : ay < ax ? [y, x] : (Math.random() < 0.5 ? [x, y] : [y, x]);
+}
+async function generateTask(spec) {
+  const pair = pickPair(S.pair);
+  if (!pair) throw new Error('Set up at least two generators (model ID and API key) in Settings.');
+  const prompt = buildPrompt(spec), temperature = S.settings.temperature, date = new Date().toISOString();
+  const runs = await Promise.allSettled(pair.map(m => { const seed = Math.floor(Math.random() * 1e9); return callModel(m, prompt.system, prompt.user, { temperature, seed }).then(r => Object.assign(r, { seed })); }));
+  const failed = runs.map((r, i) => r.status === 'rejected' ? `version ${'AB'[i]}: ${r.reason.message}` : null).filter(Boolean);
+  if (failed.length) throw new Error('Generation failed for ' + failed.join(' · '));
+  const T = targetOf(spec.level, S.settings.language);
+  const slot = (m, r) => ({ model: genName(m), family: familyOf(m), provider: PROVIDERS[m.providerType].label, modelId: m.modelId, returnedModel: r.returnedModel, text: r.text, chips: countsChips(r.text, T),
+    log: { temperature, seed: m.providerType === 'anthropic' ? null : r.seed, latencyMs: r.latencyMs, date, raw: r.raw, usage: r.usage, cost: r.cost } });
+  S.seq += 1;
+  return { id: S.seq, created: date, simulated: false, language: S.settings.language, mode: spec.mode, level: spec.level, srcLevel: spec.srcLevel || null, srcLevelSource: spec.srcLevelSource || null, srcEstimate: spec.srcEstimate || null,
+    dir: spec.mode === 'Adapt' ? spec.direction : spec.brief.type,
+    srcLabel: spec.label, src: spec.mode === 'Adapt' ? spec.source : `${spec.brief.situation}\nTheme: ${spec.brief.theme} · Text type: ${spec.brief.type}.`,
+    sourceFile: spec.fileName || null, brief: spec.brief || null,
+    crit2: spec.mode === 'Adapt' ? 'Meaning' : 'Brief', crit2Hint: spec.mode === 'Adapt' ? 'key information kept, no addition, no misinterpretation' : 'theme, text type and situation respected',
+    target: T, profileVersion: profileVersion(), promptVersion: prompt.version, prompt: { system: prompt.system, user: prompt.user },
+    A: slot(pair[0], runs[0].value), B: slot(pair[1], runs[1].value),
+    judgePick: null, ev: { r: {}, reg: {}, err: { A: [], B: [] }, best: null, why: '' }, ag: {}, your: '', sent: { A: false, B: false }, status: 'to-evaluate' };
+}
+
+/* ========== Step 4: LLM judge (blind, temperature 0, both orders for A/B, single text for final versions) ========== */
+const JUDGE_VERSION = 'judge-1.0';
+const judgeModel = () => S.settings.models.find(m => m.role === 'Judge');
+const judgeReady = () => { const m = judgeModel(); return !!(m && m.modelId && (m.providerType === 'ollama' || S.keys[m.model])); };
+const JUDGE_RUBRIC = `Rating scales (1 to 5, 5 = best):
+LEVEL (fit with the target level): 5 fully at the target level, a learner of that level understands without help; 4 at the level with 1 or 2 isolated items above or below it; 3 partly at the level, several items off or passages clearly too simple; 2 rather the neighbouring level (one level off); 1 clearly another level (two levels or more off). When LEVEL is below 5, say whether the text is "too easy" or "too hard"; when it is 5, say "on target".
+MEANING (adaptation): 5 all key information, no forbidden addition, no misinterpretation; 4 minor loss of secondary information; 3 one key piece of information lost or one forbidden addition; 2 several losses or additions, or a partial misinterpretation; 1 overall meaning altered or major misinterpretation. Not penalised: leaving out secondary information to meet the length when simplifying; definitions, explanations, rephrasing, generic examples, transitions when enriching. Forbidden additions: names, figures, dates, quotes, events, causes or consequences absent from the source.
+BRIEF (generation, used instead of MEANING): 5 theme, text type and situation all respected; 4 one secondary element approximate; 3 one main element poorly respected; 2 two main elements missed; 1 off topic.
+GRAMMAR (grammar and naturalness): 5 no errors, natural for a native speaker; 4 1 or 2 awkward phrasings, no errors; 3 some errors or artificial phrasing, reading not hindered; 2 frequent errors or clearly artificial text; 1 errors that hinder understanding. The simplicity of a low-level text is not an error.`;
+function judgeContext(t) {
+  const L = S.settings.language, P = activeProfiles()[t.level];
+  const prof = `Target level ${t.level} profile (${profileVersion()}): ${P.words[0]}-${P.words[1]} words; ${P.paras[0]}-${P.paras[1]} paragraphs; sentences of about ${P.avg} words on average at most; vocabulary: ${P.vocab[L]}; grammar: ${P.gram[L]}; register: ${P.reg[L]}; connectors: ${P.conn[L].join(', ')}; avoid: ${P.avoid[L]}.`;
+  const task = t.mode === 'Adapt'
+    ? `Task: adaptation of a ${L} source text of ${!t.srcLevel || t.srcLevel === 'Unknown' ? 'unknown level' : 'level ' + t.srcLevel + (t.srcLevelSource === 'estimated' ? ' (estimated)' : '')} to CEFR level ${t.level} (${t.dir}). Rate MEANING against the source text.\nSource text:\n<<<\n${t.src}\n>>>`
+    : `Task: original ${L} text written from a brief, at CEFR level ${t.level}. Rate BRIEF instead of MEANING.\nBrief: ${t.src}`;
+  return `${task}\n\n${prof}\n\n${JUDGE_RUBRIC}`;
+}
+const JUDGE_SYSTEM = 'You are an expert in CEFR level assessment of reading texts for learners of a foreign language. You rate each text strictly with the rubric, independently of who or what wrote it, and you ignore text length when comparing quality beyond what the level profile requires. Reply with JSON only, no other text.';
+function parseJudge(text) {
+  const m = String(text).match(/\{[\s\S]*\}/); if (!m) throw new Error('the judge did not return JSON');
+  return JSON.parse(m[0]);
+}
+const clamp15 = x => { const n = Math.round(Number(x)); if (!(n >= 1 && n <= 5)) throw new Error('invalid score in the judge answer'); return n; };
+const normDir = (lvl, d) => lvl === 5 ? 'On target' : /easy/i.test(d || '') ? 'Too easy' : /hard|diffic/i.test(d || '') ? 'Too hard' : 'Too hard';
+const normRating = o => { const level = clamp15(o.level); return { level, dir: normDir(level, o.level_direction), crit2: clamp15(o.meaning ?? o.brief), grammar: clamp15(o.grammar) }; };
+async function judgePair(t) {
+  const m = judgeModel(), ctx = judgeContext(t);
+  const ask = (x, y) => `${ctx}\n\nRate the two texts below separately against the target level, then say which one is the better reading text at that level ("1", "2" or "equal").\nText 1:\n<<<\n${x}\n>>>\nText 2:\n<<<\n${y}\n>>>\n\nJSON format: {"text1": {"level": 1-5, "level_direction": "too easy" | "on target" | "too hard", "meaning": 1-5, "grammar": 1-5}, "text2": {same keys}, "better": "1" | "2" | "equal", "reason": "one short sentence"}`;
+  const runs = [];
+  for (const [first, second] of [['A', 'B'], ['B', 'A']]) {
+    const r = await callModel(m, JUDGE_SYSTEM, ask(t[first].text, t[second].text), { temperature: 0, seed: 1 });
+    const j = parseJudge(r.text), b = String(j.better).toLowerCase();
+    runs.push({ order: first + second, [first]: normRating(j.text1), [second]: normRating(j.text2), best: b.includes('1') ? first : b.includes('2') ? second : 'Equal', reason: j.reason || '', latencyMs: r.latencyMs, returnedModel: r.returnedModel, cost: r.cost });
+  }
+  const avg = (v, k) => (runs[0][v][k] + runs[1][v][k]) / 2;
+  const side = v => { const level = avg(v, 'level'), dirs = runs.map(r => r[v].dir).filter(d => d !== 'On target'); return { level, dir: level === 5 ? 'On target' : dirs[0] || 'On target', crit2: avg(v, 'crit2'), grammar: avg(v, 'grammar') }; };
+  const A = side('A'), B = side('B'), consistent = runs[0].best === runs[1].best;
+  let best = runs[0].best;
+  if (!consistent) { best = 'Equal'; for (const k of ['level', 'crit2', 'grammar']) { if (A[k] > B[k]) { best = 'A'; break; } if (B[k] > A[k]) { best = 'B'; break; } } }
+  return { model: m.modelId, family: familyOf(m), version: JUDGE_VERSION, date: new Date().toISOString(), A, B, best, consistent, runs, finals: (t.judge && t.judge.finals) || {} };
+}
+async function judgeFinal(t, text) {
+  const m = judgeModel();
+  const r = await callModel(m, JUDGE_SYSTEM, `${judgeContext(t)}\n\nRate the text below against the target level.\nText:\n<<<\n${text}\n>>>\n\nJSON format: {"level": 1-5, "level_direction": "too easy" | "on target" | "too hard", "meaning": 1-5, "grammar": 1-5, "reason": "one short sentence"}`, { temperature: 0, seed: 1 });
+  const j = parseJudge(r.text);
+  return Object.assign(normRating(j), { reason: j.reason || '', model: m.modelId, version: JUDGE_VERSION, date: new Date().toISOString(), textLength: text.trim().split(/\s+/).length, cost: r.cost });
+}
+/* What still needs judging: the A/B pair, and every validated final version (the administrator's and the imported ones). */
+function judgeTodo(t) {
+  if (t.simulated || !t.A || !t.A.text || !t.B || !t.B.text) return [];
+  const todo = []; if (!t.judge) todo.push({ kind: 'pair' });
+  finalRecords(t).forEach(a => { const name = a.annotator || 'administrator'; if (a.your && !(t.judge && t.judge.finals && t.judge.finals[name] && t.judge.finals[name].text === a.your)) todo.push({ kind: 'final', name, text: a.your }); });
+  return todo;
+}
+let judgeChain = Promise.resolve();
+function queueJudge(t) {
+  if (!isAdmin() || !judgeReady()) return;
+  const todo = judgeTodo(t); if (!todo.length) return;
+  S.judging[t.id] = true; delete S.judgeErr[t.id];
+  judgeChain = judgeChain.then(async () => {
+    try {
+      for (const job of judgeTodo(t)) {
+        if (job.kind === 'pair') { t.judge = await judgePair(t); t.judgePick = t.judge.best; ['A', 'B'].forEach(v => { t[v].judgeLevel = t.judge[v].level; t[v].judgeDir = t.judge[v].dir; }); }
+        else { const f = await judgeFinal(t, job.text); f.text = job.text; t.judge.finals[job.name] = f; }
+        save();
+      }
+    } catch (err) { S.judgeErr[t.id] = err.message; }
+    delete S.judging[t.id]; render();
+  });
+}
+const judgeMissing = () => S.tasks.filter(t => judgeTodo(t).length);
+
+/* ========== Analysis (administrator): computed in the browser, CSV for the thesis ========== */
+const mean = xs => { const v = xs.filter(x => typeof x === 'number' && !isNaN(x)); return v.length ? v.reduce((a, c) => a + c, 0) / v.length : null; };
+const fmt = (x, d = 2) => x === null || x === undefined ? '—' : (Math.round(x * 10 ** d) / 10 ** d).toFixed(d);
+const pct = (a, b) => b ? Math.round(100 * a / b) + ' %' : '—';
+/* SARI (Xu et al. 2016): keep, delete and add n-gram scores against the reference versions, n = 1 to 4. */
+function sari(source, cand, refs) {
+  const tok = x => x.toLowerCase().match(/[\p{L}\p{N}]+|[^\s\p{L}\p{N}]/gu) || [];
+  const grams = (w, n) => { const c = new Map(); for (let i = 0; i + n <= w.length; i++) { const g = w.slice(i, i + n).join(' '); c.set(g, (c.get(g) || 0) + 1); } return c; };
+  const and = (a, b) => { const r = new Map(); a.forEach((v, k) => { if (b.has(k)) r.set(k, Math.min(v, b.get(k))); }); return r; };
+  const minus = (a, b) => { const r = new Map(); a.forEach((v, k) => { const d = v - (b.get(k) || 0); if (d > 0) r.set(k, d); }); return r; };
+  const times = (a, m) => { const r = new Map(); a.forEach((v, k) => r.set(k, v * m)); return r; };
+  const f1 = (p, r) => p + r > 0 ? 2 * p * r / (p + r) : 0;
+  const S = tok(source), C = tok(cand), R = refs.map(tok), k = R.length; let keep = 0, del = 0, add = 0;
+  for (let n = 1; n <= 4; n++) { /* same computation as the reference implementation used by Hugging Face evaluate */
+    const s = grams(S, n), c = grams(C, n), r = new Map(); R.forEach(x => grams(x, n).forEach((v, g) => r.set(g, (r.get(g) || 0) + v)));
+    const sr = times(s, k), cr = times(c, k);
+    const kc = and(sr, cr), kg = and(kc, r), ka = and(sr, r);
+    let k1 = 0, k2 = 0; kc.forEach((v, g) => { k1 += (kg.get(g) || 0) / v; k2 += kg.get(g) || 0; });
+    let kaSum = 0; ka.forEach(v => { kaSum += v; });
+    keep += f1(kc.size ? k1 / kc.size : 1, ka.size ? k2 / kaSum : 1);
+    const dc = minus(sr, cr), dg = minus(dc, r); let d1 = 0; dc.forEach((v, g) => { d1 += (dg.get(g) || 0) / v; });
+    del += dc.size ? d1 / dc.size : 1;
+    const ac = new Set([...c.keys()].filter(g => !s.has(g))), ag = [...ac].filter(g => r.has(g)), aa = [...r.keys()].filter(g => !s.has(g));
+    add += f1(ac.size ? ag.length / ac.size : 1, aa.length ? ag.length / aa.length : 1);
+  }
+  return 100 * (keep + del + add) / 12;
+}
+/* One row per human evaluation: the base of every table and of the CSV. */
+function analysisRows() {
+  const rows = [];
+  S.tasks.filter(t => !t.simulated && t.A && t.A.model).forEach(t => {
+    const finals = finalRecords(t), refs = finals.map(a => a.your).filter(Boolean);
+    evaluationsOf(t).forEach(([name, ev]) => {
+      const fin = finals.find(a => (a.annotator || 'administrator') === name), fj = fin && t.judge && t.judge.finals && t.judge.finals[name];
+      const side = fin && fin.finalSide ? fin.finalSide : ev.best === 'B' ? 'B' : 'A';
+      const dist = fin && fin.dist ? (fin.finalSide ? fin.dist[fin.finalSide] : ev.best === 'A' ? fin.dist.A : ev.best === 'B' ? fin.dist.B : Math.min(fin.dist.A, fin.dist.B)) : null;
+      const chosen = t[side], simp = t.mode === 'Adapt' && t.dir === 'simplification';
+      rows.push({ task: t.id, batch: t.batch || '', blind: ev.blind !== false, mode: t.mode, source_level: t.srcLevel === 'Unknown' ? '' : t.srcLevel || '', source_level_source: t.srcLevelSource || (t.srcLevel ? 'given' : ''), target_level: t.level, direction: t.dir, annotator: name,
+        model_A: t.A.model, model_B: t.B.model, prompt_version: t.promptVersion || '', profile_version: t.profileVersion || '',
+        A_level: ev.r.A1, A_dir: ev.r.Ad, A_crit2: ev.r.A2, A_grammar: ev.r.A3, B_level: ev.r.B1, B_dir: ev.r.Bd, B_crit2: ev.r.B2, B_grammar: ev.r.B3, best: ev.best,
+        judge_A_level: t.judge ? t.judge.A.level : null, judge_A_dir: t.judge ? t.judge.A.dir : '', judge_A_crit2: t.judge ? t.judge.A.crit2 : null, judge_A_grammar: t.judge ? t.judge.A.grammar : null,
+        judge_B_level: t.judge ? t.judge.B.level : null, judge_B_dir: t.judge ? t.judge.B.dir : '', judge_B_crit2: t.judge ? t.judge.B.crit2 : null, judge_B_grammar: t.judge ? t.judge.B.grammar : null,
+        judge_best: t.judge ? t.judge.best : '', judge_consistent: t.judge ? t.judge.consistent : '',
+        final_from: fin && fin.finalSide ? fin.finalSide : '', final_done: !!(fin && fin.your), final_words: fin && fin.your ? fin.your.trim().split(/\s+/).length : null, chosen_words: chosen.text.trim().split(/\s+/).length,
+        edit_distance_words: dist, edit_rate: dist !== null ? dist / chosen.text.trim().split(/\s+/).length : null,
+        judge_final_level: fj && fj.text === fin.your ? fj.level : null, judge_final_crit2: fj && fj.text === fin.your ? fj.crit2 : null, judge_final_grammar: fj && fj.text === fin.your ? fj.grammar : null,
+        sari_A: simp && refs.length ? sari(t.src, t.A.text, refs) : null, sari_B: simp && refs.length ? sari(t.src, t.B.text, refs) : null,
+        ...(c => ({ task_cost_usd: c.total.usd, task_cost_kind: c.total.kind, cost_A_usd: c.A ? c.A.usd : null, cost_B_usd: c.B ? c.B.usd : null, cost_judge_usd: c.judge.usd }))(taskCosts(t)) });
+    });
+  });
+  return rows;
+}
+function toCsv(rows) {
+  if (!rows.length) return '';
+  const keys = Object.keys(rows[0]), q = v => v === null || v === undefined ? '' : /[",\n;]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v);
+  return '﻿' + keys.join(',') + '\n' + rows.map(r => keys.map(k => q(typeof r[k] === 'number' && !Number.isInteger(r[k]) ? Math.round(r[k] * 1000) / 1000 : r[k])).join(',')).join('\n') + '\n';
+}
+function viewAnalysis() {
+  const rows = analysisRows(), sec = (title, note, body) => `<section class="card" style="display:flex;flex-direction:column;gap:8px"><h2>${title}</h2>${note ? `<span class="muted" style="font-size:13px">${note}</span>` : ''}${body}</section>`;
+  const tbl = (head, data, widths) => `<table style="width:100%;table-layout:fixed">${widths ? `<colgroup>${widths.map(w => `<col style="width:${w}">`).join('')}</colgroup>` : ''}<thead><tr>${head.map(h => `<th style="white-space:normal">${h}</th>`).join('')}</tr></thead><tbody>${data.length ? data.map(r => `<tr>${r.map(c => `<td style="white-space:normal">${c}</td>`).join('')}</tr>`).join('') : `<tr><td colspan="${head.length}" class="muted">No data yet.</td></tr>`}</tbody></table>`;
+  const tasks = S.tasks.filter(t => !t.simulated && t.A && t.A.model);
+  const finals = tasks.reduce((n, t) => n + finalRecords(t).length, 0), judged = tasks.filter(t => t.judge).length;
+  const models = [...new Set(rows.flatMap(r => [r.model_A, r.model_B]))].sort();
+  // 1. duels
+  const duel = models.map(m => {
+    const mine = rows.filter(r => r.model_A === m || r.model_B === m), side = r => r.model_A === m ? 'A' : 'B';
+    const w = mine.filter(r => r.best === side(r)).length, ti = mine.filter(r => r.best === 'Equal').length;
+    const jm = mine.filter(r => r.judge_best), jw = jm.filter(r => r.judge_best === side(r)).length;
+    return [esc(m), mine.length, w, ti, mine.length - w - ti, pct(w + ti / 2, mine.length), jm.length ? pct(jw + jm.filter(r => r.judge_best === 'Equal').length / 2, jm.length) : '—'];
+  });
+  // 2. level gap
+  const gap = models.map(m => {
+    const v = rows.flatMap(r => ['A', 'B'].filter(s => r['model_' + s] === m).map(s => ({ l: r[s + '_level'], d: r[s + '_dir'], jl: r['judge_' + s + '_level'], c: r[s + '_crit2'], g: r[s + '_grammar'] })));
+    return [esc(m), v.length, fmt(mean(v.map(x => x.l))), pct(v.filter(x => x.d === 'On target').length, v.length), pct(v.filter(x => x.d === 'Too easy').length, v.length), pct(v.filter(x => x.d === 'Too hard').length, v.length), fmt(mean(v.map(x => x.c))), fmt(mean(v.map(x => x.g))), fmt(mean(v.map(x => x.jl)))];
+  });
+  // 3. by level and direction
+  const groups = [...new Set(rows.map(r => r.mode === 'Adapt' ? `${r.target_level} · ${r.direction}` : `${r.target_level} · generation`))].sort();
+  const byLevel = groups.map(gname => { const g = rows.filter(r => (r.mode === 'Adapt' ? `${r.target_level} · ${r.direction}` : `${r.target_level} · generation`) === gname);
+    return [gname, g.length, fmt(mean(g.flatMap(r => [r.A_level, r.B_level]))), pct(g.flatMap(r => [r.A_dir, r.B_dir]).filter(d => d === 'On target').length, 2 * g.length), fmt(mean(g.map(r => r.edit_rate)), 2)]; });
+  // 4. human contribution
+  const fin = rows.filter(r => r.judge_final_level !== null);
+  const better = fin.filter(r => r.judge_final_level >= Math.max(r.judge_A_level, r.judge_B_level)).length;
+  const contrib = fin.length ? [['Level', fmt(mean(fin.map(r => Math.max(r.judge_A_level, r.judge_B_level)))), fmt(mean(fin.map(r => r.judge_final_level)))],
+    [tasks.some(t => t.mode === 'Adapt') ? 'Meaning / brief' : 'Brief', fmt(mean(fin.map(r => Math.max(r.judge_A_crit2, r.judge_B_crit2)))), fmt(mean(fin.map(r => r.judge_final_crit2)))],
+    ['Grammar', fmt(mean(fin.map(r => Math.max(r.judge_A_grammar, r.judge_B_grammar)))), fmt(mean(fin.map(r => r.judge_final_grammar)))]] : [];
+  const done = rows.filter(r => r.edit_distance_words !== null);
+  // 5. agreement, all tasks
+  const all = { per: tasks.map(evaluationsOf) };
+  const units = k => all.per.flatMap(l => ['A', 'B'].map(v => l.map(x => x[1].r[v + k]).filter(x => x !== undefined)));
+  const hum = [['Level', kAlpha(units('1'), INTERVAL)], ['Meaning / brief', kAlpha(units('2'), INTERVAL)], ['Grammar', kAlpha(units('3'), INTERVAL)], ['Better version', kAlpha(all.per.map(l => l.map(x => x[1].best)), NOMINAL)]];
+  const names = [...new Set(rows.map(r => r.annotator))];
+  const jPair = (field, jfield, metric) => mean(names.map(n => kAlpha(rows.filter(r => r.annotator === n && r.judge_best).flatMap(r => field === 'best' ? [[r.best, r.judge_best]] : ['A', 'B'].map(s => [r[s + field], r['judge_' + s + jfield]])), metric)));
+  const jud = [['Level', jPair('_level', '_level', INTERVAL)], ['Meaning / brief', jPair('_crit2', '_crit2', INTERVAL)], ['Grammar', jPair('_grammar', '_grammar', INTERVAL)], ['Better version', jPair('best', '', NOMINAL)]];
+  const shared = all.per.filter(l => l.length >= 2).length;
+  // 6. SARI
+  const sr = rows.filter(r => r.sari_A !== null);
+  const sariT = models.map(m => { const v = sr.flatMap(r => ['A', 'B'].filter(s => r['model_' + s] === m).map(s => r['sari_' + s])); return [esc(m), v.length, fmt(mean(v), 1)]; }).filter(r => r[1]);
+  // 7. costs (per text, not per evaluation)
+  const tc = tasks.map(t => [t, taskCosts(t)]);
+  const costRows = models.map(m => { const v = tc.flatMap(([t, c]) => ['A', 'B'].filter(s => t[s].model === m && c[s] && c[s].usd !== null).map(s => c[s].usd)); return [esc(m), v.length, v.length ? fmtUsd(mean(v)) : '—', v.length ? fmtUsd(v.reduce((a, x) => a + x, 0)) : '—']; });
+  const jv = tc.map(([, c]) => c.judge.usd).filter(x => x !== null), ev = tc.map(([, c]) => c.estimate && c.estimate.usd).filter(x => typeof x === 'number'), tv = tc.map(([, c]) => c.total.usd).filter(x => x !== null);
+  const est = tc.filter(([, c]) => c.total.kind === 'estimated').length, unk = tc.filter(([, c]) => c.total.usd === null).length;
+  if (jv.length) costRows.push(['LLM judge', jv.length + ' texts', fmtUsd(mean(jv)), fmtUsd(jv.reduce((a, x) => a + x, 0))]);
+  if (ev.length) costRows.push(['Source-level estimate', ev.length, fmtUsd(mean(ev)), fmtUsd(ev.reduce((a, x) => a + x, 0))]);
+  return `<div class="row between"><h1>Analysis</h1><div class="row"><button class="btn" data-export="1" ${S.tasks.some(x => finalRecords(x).length) ? '' : 'disabled'} title="One line per validated final version, yours and the annotators'">Export corpus (JSONL)</button><button class="btn primary" data-csv="1" ${rows.length ? '' : 'disabled'}>Download the data (CSV)</button></div></div>
+  <p class="muted" style="margin:0;font-size:13px">Computed from all real tasks (simulated ones are left out): your evaluations and the results imported from annotators. The corpus export (JSONL) has one line per validated final version, batches included. The CSV has one row per evaluation, with every rating, the judge's, the edit distance and SARI, for charts and tests in a spreadsheet or R.</p>
+  <div class="grid4" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px">${[['Texts', tasks.length], ['Evaluations', rows.length], ['Final versions', finals], ['Judged by the LLM', judged]].map(([k, v]) => `<div class="card stat"><span class="muted">${k}</span><b>${v}</b></div>`).join('')}</div>
+  ${sec('1. Model duels', 'One duel per evaluation. Win rate counts a tie as half a win. Judge column: same count with the LLM judge\'s choice.', tbl(['Model', 'Duels', 'Wins', 'Ties', 'Losses', 'Win rate (annotators)', 'Win rate (judge)'], duel))}
+  ${sec('2. Level reached, by model', 'Annotators\' scores, 1 to 5 (5 = on target), and how far off the versions were.', tbl(['Model', 'Versions rated', 'Mean level', 'On target', 'Too easy', 'Too hard', 'Mean meaning / brief', 'Mean grammar', 'Mean level (judge)'], gap))}
+  ${sec('3. By target level and direction', 'Edit rate: words changed in the final version, divided by the length of the chosen version.', tbl(['Target level · direction', 'Evaluations', 'Mean level (A and B)', 'On target', 'Mean edit rate'], byLevel))}
+  ${sec('4. Human contribution', `Judge's scores for the better of A and B, and for the final version (rated blind). ${fin.length ? `The final version is rated at least as well as A and B on level in ${pct(better, fin.length)} of cases. ` : ''}${done.length ? `Mean edit distance: ${fmt(mean(done.map(r => r.edit_distance_words)), 0)} words (edit rate ${fmt(mean(done.map(r => r.edit_rate)), 2)}).` : ''}`, tbl(['Criterion', 'Better of A and B (judge)', 'Final version (judge)'], contrib))}
+  ${sec('5. Agreement (Krippendorff\'s α)', `Annotators: texts rated by 2 or more annotators (${shared} so far). Judge: mean of the α between each annotator and the judge. 0.80 or more is reliable; 0.67 to 0.80 is acceptable for tentative conclusions.`, tbl(['Criterion', 'Between annotators', 'Annotators vs judge'], hum.map((h, i) => [h[0], fmt(h[1]), fmt(jud[i][1])])))}
+  ${sec('6. SARI (simplification only)', 'How close each model\'s version is to the final versions validated by the annotators, used as references (0 to 100, higher is closer). Computed only for simplification tasks with at least one final version.', tbl(['Model', 'Versions', 'Mean SARI'], sariT))}
+  ${sec('7. Costs', `Amounts charged by OpenRouter when available, otherwise tokens × the prices in Settings${est ? ` (estimated for ${est} text${est === 1 ? '' : 's'})` : ''}${unk ? `; ${unk} text${unk === 1 ? '' : 's'} without any price` : ''}. ${tv.length ? `Mean cost per text: <b>${fmtUsd(mean(tv))}</b> · total: <b>${fmtUsd(tv.reduce((a, x) => a + x, 0))}</b>.` : ''}`, tbl(['Item', 'Calls', 'Mean cost', 'Total'], costRows))}`;
+}
+
+/* Source level: given by the user, estimated by the LLM, or unknown (the direction is then chosen by hand). */
+const srcTxt = t => !t.srcLevel || t.srcLevel === 'Unknown' ? '?' : t.srcLevel + (t.srcLevelSource === 'estimated' ? ' (est.)' : '');
+function formDirection() {
+  if (S.srcLevel === 'Unknown') return S.level ? 'adaptation' : null;
+  if (!S.level) return null;
+  const a = LEVELS.indexOf(S.level), b = LEVELS.indexOf(S.srcLevel);
+  return a < b ? 'simplification' : a > b ? 'complexification' : 'adaptation';
+}
+function profilesText() {
+  const L = S.settings.language, AP = activeProfiles();
+  return LEVELS.map(l => { const P = AP[l]; return `${l}: ${P.words[0]}-${P.words[1]} words; ${P.paras[0]}-${P.paras[1]} paragraphs; sentences of about ${P.avg} words on average at most; vocabulary: ${P.vocab[L]}; grammar: ${P.gram[L]}; register: ${P.reg[L]}; connectors: ${P.conn[L].join(', ')}; avoid: ${P.avoid[L]}.`; }).join('\n');
+}
+async function estimateLevel(text) {
+  const m = judgeModel(), T = currentPrompts(), vars = { language: S.settings.language, profiles: profilesText(), text };
+  const system = fillPrompt(T.estimate_system, vars), user = fillPrompt(T.estimate, vars);
+  const r = await callModel(m, system, user, { temperature: 0, seed: 1 });
+  const j = parseJudge(r.text), level = String(j.level || '').toUpperCase().trim();
+  if (!LEVELS.includes(level)) throw new Error('the model did not return a CEFR level');
+  return { level, reason: j.reason || '', model: m.modelId, promptVersion: promptVersion(), profileVersion: profileVersion(), prompt: { system, user }, cost: r.cost };
+}
+
+/* Editable copies of A and B in Adapt; the generated texts stay untouched for the analysis. */
+function ensureEdits(t) {
+  if (t.edit) return;
+  t.edit = { A: t.A.text, B: t.B.text };
+  t.finalSide = t.ev.best === 'A' || t.ev.best === 'B' ? t.ev.best : null;
+  if (t.your && t.your.trim()) t.edit[t.finalSide || 'A'] = t.your; /* tasks started with the former "Your version" box */
+  if (!t.finalSide && t.your && t.your.trim()) t.finalSide = 'A';
+}
+
+/* ---------- Helpers ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const cur = () => S.tasks.find(t => t.id === S.current);
+const pending = () => S.tasks.filter(t => t.status === 'to-evaluate');
+function go(view, extra) { Object.assign(S, extra || {}); S.view = view; S.err = ''; S.yourErr = ''; render(); window.scrollTo(0, 0); }
+function taskChips(t) {
+  const lvl = t.mode === 'Adapt' ? `${srcTxt(t)} → ${t.level} · ${t.dir}` : `Target ${t.level} · ${t.dir}`;
+  return `<div class="row between"><div class="row">
+    <span class="chip" title="Adapt: from a source text · Generate: from a brief">${t.mode}</span>
+    <span class="chip" title="Source level → target level, and direction">${lvl}</span>
+</div>
+    <span class="muted">Task ${t.id}</span></div>
+    <div class="muted">Mode · source level → target level</div>`;
+}
+function sourceCol(t, tall) {
+  return `<section class="card ver" aria-label="${t.mode === 'Adapt' ? 'Source text' : 'Brief'}">
+      <div class="row between" ${tall ? 'style="height:32px"' : ''}><h2>${t.mode === 'Adapt' ? 'Source text' : 'Brief'}</h2><span class="muted" title="${esc(t.srcLabel || '')}">${t.mode === 'Adapt' ? srcTxt(t) + ' · read only' : 'read only'}</span></div>
+      <div class="txt ${tall ? 'body' : ''}" style="box-sizing:border-box;background:#FAF9F6;border:1px solid var(--line);border-radius:8px;padding:10px">${esc(t.src)}</div>
+      <div class="row" style="gap:4px;${tall ? 'min-height:56px;align-content:flex-start' : ''}">${t.mode === 'Adapt' && t.target ? chipsHtml(countsChips(t.src, t.target)) : ''}</div></section>`;
+}
+function sourcePanel(t) {
+  return `<details class="card" style="padding:10px 14px"><summary style="font-size:13px;color:var(--ink2)">${esc(t.srcLabel)}</summary>
+    <div style="margin-top:8px;font-size:13px;line-height:1.6;white-space:pre-line">${esc(t.src)}</div></details>`;
+}
+function chipsHtml(list) { return list.map(c => `<span class="chip ${c[1] ? 'ok' : 'warn'}">${esc(c[0])}</span>`).join(''); }
+function liveChips(t, text) {
+  text = text === undefined ? t.your : text;
+  const live = arguments.length > 1 ? '' : '<span class="chip">live</span>';
+  if (!t.simulated) return chipsHtml(countsChips(text, t.target)) + live;
+  const y = text.trim(), T = t.target;
+  const w = y ? y.split(/\s+/).length : 0;
+  const s = y ? y.split(/[.!?…]+/).filter(x => x.trim()).length : 0;
+  const p = y ? y.split(/\n\s*\n/).filter(x => x.trim()).length : 0;
+  const a = s ? Math.round(w / s * 10) / 10 : 0;
+  const c = T.conn.filter(x => y.toLowerCase().includes(x)).length;
+  return chipsHtml([[w + ' words', w >= T.min && w <= T.max], [a + ' / sentence', s > 0 && a <= T.avg], [p + (p === 1 ? ' paragraph' : ' paragraphs'), p >= T.pmin && p <= T.pmax], [c + (c === 1 ? ' connector' : ' connectors'), c >= 1]]) + live;
+}
+
+/* ---------- Roles and batches ---------- */
+const isAdmin = () => S.settings.role !== 'annotator';
+/* Krippendorff's alpha with missing data. units: one array of values per item (one value per annotator). */
+function kAlpha(units, delta) {
+  const U = units.filter(u => u.length >= 2), vals = U.flat(), n = vals.length;
+  if (n < 2) return null;
+  let Do = 0, De = 0;
+  U.forEach(u => { const m = u.length; for (let i = 0; i < m; i++) for (let j = 0; j < m; j++) if (i !== j) Do += delta(u[i], u[j]) / (m - 1); });
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) if (i !== j) De += delta(vals[i], vals[j]);
+  Do /= n; De /= n * (n - 1);
+  return De === 0 ? null : 1 - Do / De;
+}
+const INTERVAL = (a, b) => (a - b) * (a - b), NOMINAL = (a, b) => a === b ? 0 : 1;
+function evaluationsOf(t) {
+  const o = [];
+  if (t.ev && t.ev.validatedAt) o.push([S.settings.annotator || 'administrator', t.ev]);
+  Object.entries(t.annotations || {}).forEach(([n, a]) => { if (a.ev && a.ev.validatedAt) o.push([n, a.ev]); });
+  return o;
+}
+function batchAgreement(b) {
+  const per = S.tasks.filter(t => t.batch === b).map(evaluationsOf), coders = new Set(per.flat().map(x => x[0]));
+  const units = k => per.flatMap(l => ['A', 'B'].map(v => l.map(x => x[1].r[v + k]).filter(x => x !== undefined)));
+  const bestU = per.map(l => l.map(x => x[1].best).filter(Boolean));
+  let same = 0, pairs = 0; bestU.forEach(u => { for (let i = 0; i < u.length; i++) for (let j = i + 1; j < u.length; j++) { pairs++; if (u[i] === u[j]) same++; } });
+  return { coders: coders.size, shared: per.filter(l => l.length >= 2).length, level: kAlpha(units('1'), INTERVAL), crit2: kAlpha(units('2'), INTERVAL), gram: kAlpha(units('3'), INTERVAL), best: kAlpha(bestU, NOMINAL), bestPct: pairs ? Math.round(100 * same / pairs) : null };
+}
+/* Agreement between each annotator and the LLM judge (mean of the pairwise alphas). */
+function judgeAgreement(b) {
+  const ts = S.tasks.filter(t => t.batch === b && t.judge), humans = {};
+  ts.forEach(t => evaluationsOf(t).forEach(([n, ev]) => { (humans[n] = humans[n] || []).push([t, ev]); }));
+  const names = Object.keys(humans); if (!names.length) return null;
+  const mean = xs => { const v = xs.filter(x => x !== null); return v.length ? v.reduce((a, c) => a + c, 0) / v.length : null; };
+  const lvl = mean(names.map(n => kAlpha(humans[n].flatMap(([t, ev]) => ['A', 'B'].map(v => [ev.r[v + '1'], t.judge[v].level])), INTERVAL)));
+  const best = mean(names.map(n => kAlpha(humans[n].map(([t, ev]) => [ev.best, t.judge.best]), NOMINAL)));
+  let same = 0, n = 0; names.forEach(k => humans[k].forEach(([t, ev]) => { n++; if (ev.best === t.judge.best) same++; }));
+  return { annotators: names.length, texts: ts.length, level: lvl, best, bestPct: n ? Math.round(100 * same / n) : null };
+}
+function batchFile(b) {
+  const ts = S.tasks.filter(t => t.batch === b);
+  return { app: APP_ID, kind: 'batch', batch: b, language: S.settings.language, created: new Date().toISOString(), profiles: activeProfiles(), profileVersion: profileVersion(),
+    tasks: ts.map(t => ({ uid: t.uid, mode: t.mode, level: t.level, srcLevel: t.srcLevel, srcLevelSource: t.srcLevelSource || null, dir: t.dir, srcLabel: t.srcLabel, src: t.src, crit2: t.crit2, crit2Hint: t.crit2Hint, target: t.target, profileVersion: t.profileVersion || null,
+      A: { text: t.A.text, chips: t.A.chips }, B: { text: t.B.text, chips: t.B.chips } })) };
+}
+function importBatch(d) {
+  if (d.language) S.settings.language = d.language;
+  if (d.profiles) { S.settings.profiles = d.profiles; S.settings.profileVersion = d.profileVersion; } /* the Guide shows the administrator's profiles */
+  let added = 0;
+  d.tasks.forEach(x => {
+    if (S.tasks.some(t => t.uid === x.uid)) return;
+    S.seq += 1; added++;
+    S.tasks.push(Object.assign({}, x, { id: S.seq, batch: d.batch, language: d.language || S.settings.language, created: new Date().toISOString(), simulated: false,
+      A: { model: null, text: x.A.text, chips: x.A.chips }, B: { model: null, text: x.B.text, chips: x.B.chips },
+      judgePick: null, ev: { r: {}, reg: {}, err: { A: [], B: [] }, best: null, why: '' }, ag: {}, your: '', sent: { A: false, B: false }, status: 'to-evaluate' }));
+  });
+  return added;
+}
+function resultsFile() {
+  return { app: APP_ID, kind: 'results', annotator: S.settings.annotator, exported: new Date().toISOString(),
+    results: S.tasks.filter(t => t.uid && (t.status === 'adapting' || t.status === 'done')).map(t => ({ uid: t.uid, batch: t.batch, status: t.status, ev: t.ev, your: t.status === 'done' ? t.your : '', finalSide: t.finalSide || null, dist: t.dist || null, sent: t.sent, validatedAt: t.validatedAt || null })) };
+}
+function importResults(d) {
+  let n = 0;
+  d.results.forEach(r => { const t = S.tasks.find(x => x.uid === r.uid); if (!t) return; t.annotations = t.annotations || {}; t.annotations[d.annotator] = { status: r.status, ev: r.ev, your: r.your, finalSide: r.finalSide || null, dist: r.dist, sent: r.sent, validatedAt: r.validatedAt }; n++; });
+  return n;
+}
+function batchesCard() {
+  const unb = S.tasks.filter(t => !t.batch && t.A && t.B), ids = [...new Set(S.tasks.filter(t => t.batch).map(t => t.batch))];
+  const f = x => x === null ? '—' : x.toFixed(2);
+  const rows = ids.map(b => {
+    const ts = S.tasks.filter(t => t.batch === b), names = [...new Set(ts.flatMap(t => Object.keys(t.annotations || {})))];
+    const got = names.map(n => `${esc(n)} ${ts.filter(t => t.annotations && t.annotations[n] && t.annotations[n].ev && t.annotations[n].ev.validatedAt).length}/${ts.length}`).join(' · ') || '<span class="muted">none yet</span>';
+    const a = batchAgreement(b);
+    const ag = a.shared ? `Level ${f(a.level)} · ${ts[0].crit2 === 'Brief' ? 'Brief' : 'Meaning'} ${f(a.crit2)} · Grammar ${f(a.gram)} · Better ${f(a.best)}${a.bestPct !== null ? ` (${a.bestPct} % same)` : ''}<br><span class="muted">${a.shared} texts rated by 2+ annotators · ${a.coders} annotators</span>` : '<span class="muted">needs 2 annotators on the same texts</span>';
+    const j = judgeAgreement(b);
+    const jag = j ? `<br>Judge vs annotators: Level ${f(j.level)} · Better ${f(j.best)}${j.bestPct !== null ? ` (${j.bestPct} % same)` : ''}` : '';
+    return `<tr><td>${b}</td><td>${ts.length}</td><td style="white-space:normal">${got}</td><td style="white-space:normal">${ag}${jag}</td><td style="text-align:right"><button class="btn outline" style="height:34px" data-bexport="${b}">Export batch file</button></td></tr>`;
+  }).join('') || '<tr><td colspan="5" class="muted">No batch yet.</td></tr>';
+  return `<h2>Batches</h2>
+  <div class="card" style="display:flex;flex-direction:column;gap:10px">
+    <div class="row between"><span class="muted" style="font-size:13px">Send a batch file to the annotators (Annotator role). They return a results file. Give the same batch to at least two annotators to measure agreement.</span>
+      <div class="row"><button class="btn" data-mkbatch="1" ${unb.length ? '' : 'disabled'}>Create a batch (${unb.length} text${unb.length === 1 ? '' : 's'} not in a batch)</button>
+      <label class="btn" for="resultsIn" style="display:inline-flex;align-items:center;cursor:pointer">Import results</label><input type="file" id="resultsIn" accept=".json,application/json" multiple style="position:absolute;left:-9999px"></div></div>
+    <div class="scroll"><table style="min-width:900px;table-layout:fixed"><colgroup><col style="width:8%"><col style="width:7%"><col style="width:23%"><col style="width:44%"><col style="width:18%"></colgroup><thead><tr><th>Batch</th><th>Texts</th><th>Results received</th><th>Agreement (Krippendorff's α)</th><th><span style="position:absolute;left:-9999px">Action</span></th></tr></thead><tbody>${rows}</tbody></table></div>
+    <span class="muted">α: 1 = perfect agreement, 0 = chance; 0.80 or more is reliable, 0.67 to 0.80 is acceptable for tentative conclusions. Your own evaluations count as one annotator.</span></div>`;
+}
+
+/* ---------- Header ---------- */
+function renderNav() {
+  if ($('langChip')) { $('langChip').textContent = `${S.settings.language} corpus · ${isAdmin() ? 'Administrator' : 'Annotator'}${S.settings.annotator.trim() ? ' · ' + S.settings.annotator.trim() : ''}`; $('langChip').style.visibility = S.settings.roleChosen ? 'visible' : 'hidden'; }
+  if (!S.settings.roleChosen) { $('mainNav').innerHTML = ''; $('adminNav').innerHTML = ''; $('toast').innerHTML = ''; return; }
+  const steps = [['corpus', '1', 'Corpus'], ['evaluate', '2', 'Evaluate'], ['adapt', '3', 'Adapt']];
+  $('mainNav').innerHTML = `<button class="nav ${S.view === 'home' ? 'on' : ''}" data-go="home">Home</button>` + steps.map(s => `<button class="nav ${S.view === s[0] ? 'on' : ''}" data-go="${s[0]}"><span class="n">${s[1]}</span>${s[2]}</button>`).join('')
+    + (isAdmin() ? `<span aria-hidden="true" style="width:1px;height:20px;background:var(--line2);margin:0 6px;align-self:center"></span><button class="nav ${S.view === 'analysis' ? 'on' : ''}" data-go="analysis">Analysis</button>` : '');
+  const admin = [['settings', 'Settings'], ['guide', 'Guide']];
+  $('adminNav').innerHTML = admin.map(s => `<button class="nav ${S.view === s[0] ? 'on' : ''}" data-go="${s[0]}">${s[1]}</button>`).join('');
+  clearTimeout(window.toastTimer); if (S.toast) window.toastTimer = setTimeout(() => { S.toast = ''; const el = document.querySelector('#toast [role=status]'); if (el) el.remove(); }, 4000);
+  $('toast').innerHTML = (STORAGE === 'memory' ? '<div class="toast" role="alert" style="background:var(--errBg);color:var(--err)">Data cannot be saved in this browser: it will be lost when the page closes. Save a backup in Settings.</div>' : '') + (S.toast ? `<div class="toast" role="status">${esc(S.toast)}</div>` : '');
+}
+
+/* ---------- Home ---------- */
+function viewHome() {
+  const n = st => S.tasks.filter(t => t.status === st).length;
+  const rows = S.tasks.filter(t => S.homeTab === 'all' || t.status === S.homeTab);
+  const label = { 'to-evaluate': ['To evaluate', 'chip'], adapting: ['To adapt', 'chip warn'], done: ['Validated', 'chip ok'] };
+  const TONE = { done: ['var(--okBg)', 'var(--ok)', '#BFDFC9'], 'to-evaluate': ['var(--chip)', 'var(--ink2)', '#D6D3CA'], adapting: ['var(--warnBg)', 'var(--warn)', '#F1D9A6'] };
+  const card = (st, title) => { const [bg, fg, bd] = TONE[st]; return `<button class="card stat" data-htab="${st}" aria-pressed="${S.homeTab === st}" style="text-align:left;cursor:pointer;background:${bg};border-color:${bd};${S.homeTab === st ? 'outline:2px solid var(--accent);' : ''}"><span class="muted" style="color:${fg}">${title}</span><b style="color:${fg}">${n(st)}</b></button>`; };
+  return `<h1>Home</h1>${S.tasks.some(x => x.simulated) ? '<p class="muted" style="margin:0;font-size:13px">Some tasks use simulated versions (examples, or the simulated option). Their LLM judge values are simulated too.</p>' : ''}
+  <div class="grid3">${card('done', 'Validated')}${card('to-evaluate', 'To evaluate')}${card('adapting', 'To adapt')}</div>
+  <div class="row between"><span class="muted">${S.homeTab === 'all' ? 'All tasks' : 'Filtered: ' + label[S.homeTab][0]}</span>${S.homeTab !== 'all' ? '<button class="small" data-htab="all">Show all</button>' : ''}</div>
+  <div class="card scroll" style="padding:0"><table style="min-width:900px;table-layout:fixed"><colgroup><col style="width:22%"><col style="width:14%"><col style="width:11%"><col style="width:9%"><col style="width:7%"><col style="width:7%"><col style="width:12%"><col style="width:18%"></colgroup><thead><tr><th>Document</th><th>Mode</th><th>Level</th><th>Language</th><th>Batch</th><th>Choice</th><th>Status</th><th><span style="position:absolute;left:-9999px">Action</span></th></tr></thead><tbody>
+  ${rows.map(t => { const doc = t.mode === 'Adapt' ? (t.sourceFile || (t.srcLabel || '').replace(/^Source text · /, '').replace(/ · \d+ words$/, '') || '—') : 'Generated';
+    const mode = t.mode === 'Adapt' ? (t.dir || 'adaptation').replace(/^./, c => c.toUpperCase()) : 'Generation';
+    return `<tr><td title="Task ${t.id} · ${esc(t.srcLabel || '')}">${esc(doc)}</td><td>${mode}</td><td>${t.mode === 'Adapt' ? srcTxt(t) + ' → ' + t.level : t.level}</td><td>${esc(t.language || S.settings.language)}</td><td>${t.batch || '—'}</td><td>${t.ev.best || '—'}</td>
+    <td><span class="${label[t.status][1]}">${label[t.status][0]}</span></td>
+    <td style="text-align:right">${t.status === 'to-evaluate' ? `<button class="btn outline" style="height:36px" data-eval="${t.id}">Evaluate</button>` : t.status === 'adapting' ? `<button class="btn outline" style="height:36px" data-resume="${t.id}">Resume adapting</button>` : ''}</td></tr>`; }).join('') || `<tr><td colspan="8" class="muted">No task here.</td></tr>`}
+  </tbody></table></div>`;
+}
+
+/* ---------- 1 Corpus ---------- */
+function viewCorpus() {
+  if (!isAdmin()) {
+    const got = [...new Set(S.tasks.filter(t => t.batch).map(t => t.batch))];
+    return `<div class="row between"><h1>Corpus</h1>
+    <div class="row"><label class="btn" for="batchIn" style="display:inline-flex;align-items:center;cursor:pointer">Import a batch</label><input type="file" id="batchIn" accept=".json,application/json" style="position:absolute;left:-9999px">
+      <button class="btn" data-exportres="1">Export my results</button></div></div>
+    <p class="muted" style="margin:0;font-size:13px">${got.length ? 'Batches received: ' + got.join(', ') + '. ' : ''}Import the batch file sent by the administrator, evaluate and adapt each text, then export your results and send the file back.</p>
+    ${processedList()}`;
+  }
+  return `<div class="row between"><h1>Corpus</h1>
+    <div class="row"><button class="btn ${S.newMode === 'Adapt' ? 'primary' : ''}" data-new="Adapt">Load a new text</button><button class="btn ${S.newMode === 'Generate' ? 'primary' : ''}" data-new="Generate">Generate from a brief</button></div></div>
+  ${S.newMode ? newForm() : ''}
+  ${processedList()}
+  ${batchesCard()}`;
+}
+function processedList() {
+  const done = S.tasks.filter(t => ['to-evaluate', 'adapting', 'done'].includes(t.status));
+  const label = { 'to-evaluate': ['To evaluate', 'chip'], adapting: ['To adapt', 'chip warn'], done: ['Validated', 'chip ok'] };
+  const miss = isAdmin() ? judgeMissing().filter(t => !S.judging[t.id]).length : 0, running = Object.keys(S.judging).length;
+  return `<div class="row between" style="min-height:36px"><h2>Texts already processed</h2>${isAdmin() ? `<div class="row"><span class="muted">${running ? `LLM judge running on ${running} text${running === 1 ? '' : 's'}…` : !judgeReady() ? 'LLM judge: set the Judge model and key in Settings.' : miss ? '' : 'LLM judge up to date.'}</span>${miss && judgeReady() ? `<button class="btn" style="height:34px" data-runjudge="1">Run the LLM judge (${miss} text${miss === 1 ? '' : 's'})</button>` : ''}</div>` : ''}</div>
+  <div class="card scroll" style="padding:0"><table style="min-width:900px;table-layout:fixed"><colgroup><col style="width:8%"><col style="width:9%"><col style="width:10%"><col style="width:8%"><col style="width:30%"><col style="width:13%"><col style="width:14%"><col style="width:8%"></colgroup><thead><tr><th>Task</th><th>Mode</th><th>Level</th><th>Choice</th><th>Final version</th><th>Status</th><th><span style="position:absolute;left:-9999px">Action</span></th><th><span style="position:absolute;left:-9999px">Delete</span></th></tr></thead><tbody>
+  ${done.map(t => `<tr><td title="${isAdmin() && !t.simulated ? (c => `Cost: ${fmtUsd(c.total.usd)} (${c.total.kind}${c.total.missing ? ', ' + c.total.missing + ' call(s) without price' : ''}) · A ${fmtUsd(c.A && c.A.usd)} · B ${fmtUsd(c.B && c.B.usd)} · judge ${fmtUsd(c.judge.usd)}${c.estimate ? ' · estimate ' + fmtUsd(c.estimate.usd) : ''}`)(taskCosts(t)) : ''}">Task ${t.id}${t.batch ? ` <span class="chip">${t.batch}</span>` : ''}</td><td>${t.mode}</td><td>${t.mode === 'Adapt' ? srcTxt(t) + ' → ' + t.level : t.level}</td><td>${t.ev.best || '—'}</td>
+    <td>${t.status === 'done' ? esc((t.your || t[t.ev.best === 'B' ? 'B' : 'A'].text).slice(0, 70)) + '…' : '<span class="muted">not written yet</span>'}</td>
+    <td><span class="${label[t.status][1]}">${label[t.status][0]}</span></td>
+    <td style="text-align:right">${t.status === 'adapting' ? `<button class="btn outline" style="height:36px" data-resume="${t.id}">Resume adapting</button>` : t.status === 'to-evaluate' ? `<button class="btn outline" style="height:36px" data-eval="${t.id}">Evaluate</button>` : ''}</td>
+    <td style="text-align:center">${S.confirmDel === t.id ? `<button class="btn" style="height:32px;padding:0 8px;color:#b42318;border-color:#b42318" data-del="${t.id}" title="Click again to delete">Delete?</button>` : `<button class="small" data-del="${t.id}" title="Delete this text" aria-label="Delete task ${t.id}" style="font-size:16px;line-height:1">×</button>`}</td></tr>`).join('') || '<tr><td colspan="8" class="muted">No text processed yet.</td></tr>'}
+  </tbody></table></div>`;
+}
+function selectWithOther(id, list, value, other, label) {
+  const isOther = value === '__other';
+  return `<label class="f">${label}<select id="${id}">${list.map(x => `<option ${value === x ? 'selected' : ''}>${esc(x)}</option>`).join('')}<option value="__other" ${isOther ? 'selected' : ''}>Other (free text)</option></select></label>
+    ${isOther ? `<label class="f">${label} · your own<input type="text" id="${id}Other" value="${esc(other)}" placeholder="Type it here"></label>` : ''}`;
+}
+function newForm() {
+  const common = `<div class="grid2">
+      <div class="f">Target level<div class="row" style="gap:6px" role="group" aria-label="Target level">${LEVELS.map(l => `<button class="opt ${S.level === l ? 'on' : ''}" aria-pressed="${S.level === l}" data-lvl="${l}">${l}</button>`).join('')}</div></div>
+      <label class="f"><span>Model pair <span class="muted">· Auto keeps the pairs and the A/B positions balanced.</span></span><select id="pairSel"><option value="Auto" ${S.pair === 'Auto' ? 'selected' : ''}>Auto (next in rotation)</option>${(() => { const g = readyGenerators(), o = []; for (let i = 0; i < g.length; i++) for (let j = i + 1; j < g.length; j++) o.push(genName(g[i]) + ' vs ' + genName(g[j])); return o.map(x => `<option ${S.pair === x ? 'selected' : ''}>${x}</option>`).join(''); })()}</select>${readyGenerators().length < 2 ? '<span class="muted">No model is set up yet: add model IDs and API keys in Settings.</span>' : ''}</label></div>`;
+  const errLine = S.formErr ? `<span class="err">${esc(S.formErr)}</span>` : '';
+  if (S.newMode === 'Adapt') return `<section class="card" style="display:flex;flex-direction:column;gap:12px">
+    <div class="row between"><h2>Load a new text</h2><button class="small" data-new="">Close</button></div>
+    <div class="row"><label class="btn outline" for="fileIn" style="display:inline-flex;align-items:center;cursor:pointer">Choose a text file from your computer</label>
+      <input type="file" id="fileIn" accept=".txt,text/plain" style="position:absolute;left:-9999px">
+      ${S.fileErr && !S.file ? `<span class="err">${esc(S.fileErr)}</span>` : `<span class="muted">${S.file ? esc(S.file.name) + ' · ' + S.file.words + ' words' : 'Plain text (.txt)'}</span>`}</div>
+    ${S.file ? `<div style="max-height:260px;overflow:auto;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:13px;line-height:1.6;white-space:pre-line">${esc(S.file.text)}</div>
+    <div class="f">Source level<div class="row" style="gap:6px" role="group" aria-label="Source level">${LEVELS.map(l => `<button class="opt ${S.srcLevel === l ? 'on' : ''}" aria-pressed="${S.srcLevel === l}" data-srclvl="${l}">${l}</button>`).join('')}
+      <button class="opt ${S.srcLevel === 'Unknown' || S.srcLevelSource === 'estimated' ? 'on' : ''}" style="margin-left:8px" data-estimate="1" ${S.estimating ? 'disabled' : ''} title="${judgeReady() ? 'The LLM judge estimates the level; you can correct it' : 'No Judge model in Settings: the level is recorded as unknown'}">${S.estimating ? 'Estimating…' : 'Unknown? Estimate with the LLM'}</button>
+      ${S.estimate ? (S.estimate.error ? `<span class="err" title="${esc(S.estimate.error)}">Estimate failed: level recorded as unknown</span>` : `<span class="muted" title="${esc(S.estimate.reason || '')}">Estimated by the LLM (${esc(S.estimate.model)}): <b>${S.estimate.level}</b></span>`) : S.srcLevel === 'Unknown' ? '<span class="muted">No Judge model: level recorded as unknown</span>' : ''}</div>
+      <div style="height:36px;margin-top:6px;display:flex;align-items:center;gap:6px;overflow:hidden;white-space:nowrap"><span class="chip">Direction: ${formDirection() || 'choose a target level'}</span>${formDirection() === 'adaptation' ? `<span class="muted">${S.srcLevel === 'Unknown' ? 'source level unknown' : `source and target are both ${S.level}`}: the models simplify or enrich as needed</span>` : ''}</div></div>` : ''}
+    ${common}${errLine}
+    <div class="row"><button class="btn primary" data-create="FR-Adapt" ${S.busy ? 'disabled' : ''}>${S.busy ? 'Generating two versions…' : 'Generate two versions'}</button><span class="muted">Model, version, temperature, seed, prompt and date are logged.</span></div></section>`;
+  return `<section class="card" style="display:flex;flex-direction:column;gap:12px">
+    <div class="row between"><h2>Generate from a brief</h2><div class="row"><button class="btn outline" style="height:32px" data-brief="1">Random brief</button><button class="small" data-new="">Close</button></div></div>
+    <div class="grid2"><div style="display:flex;flex-direction:column;gap:8px">${selectWithOther('theme', THEMES, S.theme, S.themeOther, 'Theme')}</div><div style="display:flex;flex-direction:column;gap:8px">${selectWithOther('type', TYPES, S.type, S.typeOther, 'Text type')}</div></div>
+    <label class="f">Situation · who writes, to whom, for what purpose<input type="text" id="situation" value="${esc(S.situation)}"></label>
+    ${common}${errLine}
+    <div class="row"><button class="btn primary" data-create="FR-Generate" ${S.busy ? 'disabled' : ''}>${S.busy ? 'Generating two versions…' : 'Generate two versions'}</button><span class="muted">Short formats (signs, posters, menus, timetables) are not offered.</span></div></section>`;
+}
+
+/* ---------- 2 Evaluate ---------- */
+function ratingBlock(t, v, locked) {
+  const r = t.ev.r, crits = [['1', '<b style="color:var(--ink)">Level</b> · fit with the target level · 1 poor · 5 excellent'], ['2', `<b style="color:var(--ink)">${t.crit2}</b> · ${t.crit2Hint} · 1 poor · 5 excellent`], ['3', '<b style="color:var(--ink)">Grammar and naturalness</b> · 1 poor · 5 excellent']];
+  const opts = (key, values) => values.map(x => `<button class="opt ${r[key] === x ? 'on' : ''}" aria-pressed="${r[key] === x}" data-rate="${key}" data-val="${x}" ${locked ? 'disabled' : ''}>${x}</button>`).join('');
+  const lv = r[v + '1'], dirOff = locked || lv === undefined || lv === 5;
+  const radio = x => `<label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:${dirOff ? '#9B9890' : 'var(--ink2)'};cursor:${dirOff ? 'default' : 'pointer'}"><input type="radio" name="dir${v}" value="${x}" data-dirv="${v}" ${r[v + 'd'] === x ? 'checked' : ''} ${dirOff ? 'disabled' : ''}> ${x}</label>`;
+  const levelRow = `<div class="row" style="gap:4px">${opts(v + '1', [1, 2, 3, 4, 5])}
+    <span role="radiogroup" aria-label="Direction of the gap for version ${v}" class="row" style="gap:14px;margin-left:14px">${radio('Too easy')}${radio('Too hard')}<span class="muted">${lv === undefined ? 'after the level score' : lv === 5 ? 'on target' : r[v + 'd'] ? '' : 'required'}</span></span></div>`;
+  return crits.map(c => `<div class="crit" ${c[0] === '1' ? 'style="padding-top:12px;margin-top:4px;border-top:1px solid var(--line)"' : ''}><span class="muted">${c[1]}</span>${c[0] === '1' ? levelRow : `<div class="row" style="gap:4px">${opts(v + c[0], [1, 2, 3, 4, 5])}</div>`}</div>`).join('');
+}
+function viewEvaluate() {
+  let t = cur();
+  if (!t || (t.status !== 'to-evaluate' && t.status !== 'adapting')) { t = pending()[0]; if (t) S.current = t.id; }
+  const locked = t && t.status === 'adapting';
+  if (!t) return `<div class="card empty"><h2>No task to evaluate</h2><p>Load or generate a text in Corpus.</p><button class="btn primary" data-go="corpus">Go to Corpus</button></div>`;
+  const col = v => `<section class="card ver" aria-label="Version ${v}">
+      <div class="row between"><h2>Version ${v}</h2><span class="muted">${isAdmin() && t[v].model ? esc(t[v].model) : 'Model hidden'}</span></div>
+      <div class="txt">${esc(t[v].text)}</div><div class="row" style="gap:4px">${chipsHtml(t[v].chips)}</div>${ratingBlock(t, v, locked)}</section>`;
+  const bests = [['A', 'A'], ['Equal', 'Equal'], ['B', 'B']];
+  const allRated = isComplete(t);
+  return `${taskChips(t)}
+  <div class="cols three">${col('A')}${sourceCol(t)}${col('B')}</div>
+  <div class="card" style="display:flex;flex-direction:column;gap:10px">
+    <div class="row"><span class="muted" style="font-size:13px">Better version</span>${bests.map(b => `<button class="opt ${t.ev.best === b[0] ? 'on' : ''}" aria-pressed="${t.ev.best === b[0]}" data-best="${b[0]}" ${locked || !allRated ? 'disabled' : ''}>${b[1]}</button>`).join('')}
+      <label class="f" style="flex:1 1 280px;flex-direction:row;align-items:center;gap:8px">Why (optional)<input type="text" id="why" value="${esc(t.ev.why)}" ${locked ? 'readonly' : ''} placeholder="Closer to the target level, meaning complete" style="flex:1;min-width:0"></label></div>
+    <div class="row between"><span class="${S.err ? 'err' : 'muted'}">${S.err ? esc(S.err) : locked ? 'Evaluation validated: your choices are kept and can no longer be changed.' : (t.ev.best && !t.ev.bestManual ? 'Better version pre-selected from your ratings; change it if needed.' : !allRated ? 'Rate all criteria for A and B: the better version is then selected automatically, and you can change it.' : isAdmin() && t.A.model ? 'Administrator: model names are shown; your evaluation is recorded as not blind.' : 'The LLM judge is shown in Adapt, after you validate.')}</span>
+      ${locked ? '<button class="btn primary" data-go="adapt">Continue in Adapt</button>' : '<button class="btn primary" data-validate-eval="1">Validate evaluation</button>'}</div></div>`;
+}
+
+/* ---------- 3 Adapt ---------- */
+function viewAdapt() {
+  const t = cur();
+  if (!t || t.status !== 'adapting') return `<div class="card empty"><h2>Nothing to adapt yet</h2><p>Validate an evaluation first, or resume a task marked To adapt in Home or Corpus.</p><button class="btn primary" data-go="evaluate">Go to Evaluate</button></div>`;
+  const ink = x => `<b style="color:var(--ink)">${x}</b>`;
+  const match = same => `<span class="chip ${same ? 'ok' : 'warn'}">${same ? 'Same' : 'Different'}</span>`;
+  const cell = (html, mid) => `<div class="card" style="font-size:13px;color:var(--muted);min-width:0;padding:12px 16px;${mid ? 'border-color:var(--accent);' : ''}">${html}</div>`;
+  const bestTxt = { A: 'A', B: 'B', Equal: 'Equal' }[t.ev.best];
+  const jName = t.judge ? t.judge.family : t.simulated ? JUDGE : (judgeModel() && judgeModel().modelId ? familyOf(judgeModel()) : 'LLM');
+  const jNone = !isAdmin() ? '<span class="muted">kept by the administrator</span>' : S.judging[t.id] ? '<span class="muted">running…</span>'
+    : S.judgeErr[t.id] ? `<span class="err" title="${esc(S.judgeErr[t.id])}">failed</span> <button class="small" data-runjudge="1">Retry</button>`
+    : !judgeReady() ? '<span class="muted">no judge model in Settings</span>' : '<span class="muted">not available</span> <button class="small" data-runjudge="1">Run</button>';
+  const jl = v => t[v].judgeLevel ? ink(t[v].judgeLevel + ', ' + t[v].judgeDir.toLowerCase()) : jNone;
+  const lvlCell = v => cell(`<span>Level of ${v} · you: ${ink(t.ev.r[v + '1'] + ', ' + t.ev.r[v + 'd'].toLowerCase())} · LLM judge (${esc(jName)}): ${jl(v)}</span>`);
+  const band = `<div class="cols three" aria-label="Your choices and the LLM judge's">
+    ${lvlCell('A')}
+    ${cell(`<span>Better version · you: ${ink(bestTxt)} · LLM judge (${esc(jName)}): ${t.judgePick ? ink(t.judgePick) + (t.judge && !t.judge.consistent ? ' <span class="muted" title="The two readings, in A/B and B/A order, disagreed">(order-dependent)</span>' : '') : jNone}</span>`, true)}
+    ${lvlCell('B')}</div>`;
+  ensureEdits(t);
+  const col = v => { const changed = t.edit[v] !== t[v].text, fin = t.finalSide === v;
+    return `<section class="card ver" aria-label="Version ${v}" style="${fin ? 'border:2px solid var(--accent);padding:15px' : ''}">
+      <div class="row between" style="height:32px"><span class="row" style="gap:8px"><h2>Version ${v}</h2><span class="muted">${t[v].model || ''}</span></span>
+        <span class="row" style="gap:6px"><button class="small" data-restore="${v}" ${changed ? '' : 'disabled'} title="Back to the generated text">Restore original</button>
+        <button class="opt ${fin ? 'on' : ''}" aria-pressed="${fin}" data-final="${v}" title="${fin ? 'This version goes to the corpus' : 'Use this version as the final one'}">${fin ? 'Final' : 'Use as final'}</button></span></div>
+      <label for="edit${v}" style="position:absolute;left:-9999px">Version ${v}, editable</label>
+      <textarea id="edit${v}" class="body edit" data-edit="${v}">${esc(t.edit[v])}</textarea>
+      <div class="row" style="gap:4px;min-height:56px;align-content:flex-start" id="chips${v}">${liveChips(t, t.edit[v])}</div></section>`; };
+  return `${taskChips(t)}
+  <div class="cols three" id="adaptCols">${col('A')}${sourceCol(t, true)}${col('B')}</div>
+  ${band}
+  <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding-top:6px">
+    ${S.yourErr ? `<span class="err">${esc(S.yourErr)}</span>` : ''}
+    <button class="btn primary" data-corpus="1" style="height:44px;min-width:260px">${t.finalSide ? `Validate version ${t.finalSide} for corpus` : 'Choose the final version'}</button></div>`;
+}
+
+/* ---------- Admin views ---------- */
+function viewSettings() {
+  const M = S.settings.models;
+  const where = { indexeddb: 'this browser (IndexedDB)', local: 'this browser (localStorage)', memory: 'memory only: data is lost when the page closes' }[STORAGE];
+  return `<h1>Settings</h1><p class="muted" style="margin:0;font-size:13px">${isAdmin() ? 'Installation, models and data.' : 'Installation and data.'}</p>
+  <div class="card" style="display:flex;flex-direction:column;gap:10px"><h2>Installation</h2><div class="grid3">
+    <label class="f">Role<select id="roleSel"><option value="admin" ${isAdmin() ? 'selected' : ''}>Administrator</option><option value="annotator" ${isAdmin() ? '' : 'selected'}>Annotator</option></select><span class="muted">${isAdmin() ? 'Generates the texts, sends batches, collects results.' : 'Evaluates and adapts the texts of the batches received.'}</span></label>
+    <label class="f">${isAdmin() ? 'Administrator' : 'Annotator'} pseudonym<input type="text" id="annotator" value="${esc(S.settings.annotator)}" placeholder="${isAdmin() ? 'admin-01' : 'annotator-01'}"></label>
+    <label class="f">Corpus language<select id="corpusLang">${['French', 'English'].map(l => `<option ${S.settings.language === l ? 'selected' : ''}>${l}</option>`).join('')}</select><span class="muted">${isAdmin() ? 'One installation per language; set it once, before adding texts.' : 'Set by the batch you import.'}</span></label></div></div>
+  ${isAdmin() ? `<div class="card" style="padding:0"><h2 style="padding:16px 16px 4px">LLMs</h2><div class="scroll"><table style="min-width:900px;table-layout:fixed"><colgroup><col style="width:9%"><col style="width:13%"><col style="width:23%"><col style="width:14%"><col style="width:8%"><col style="width:8%"><col style="width:25%"></colgroup><thead><tr><th>Role</th><th>Provider</th><th>Model ID</th><th>API key</th><th title="Price per million input tokens, in US dollars">$ / 1M in</th><th title="Price per million output tokens, in US dollars">$ / 1M out</th><th>Connection</th></tr></thead><tbody>
+  ${M.map((m, i) => `<tr><td>${m.role}</td><td><select data-mp="${i}" style="height:36px;width:100%">${Object.entries(PROVIDERS).map(([k, p]) => `<option value="${k}" ${m.providerType === k ? 'selected' : ''}>${p.label}</option>`).join('')}</select></td><td><input type="text" data-mv="${i}" value="${esc(m.modelId)}" placeholder="${m.providerType === 'openrouter' ? 'provider/model' : 'model name'}" style="height:36px;width:100%"></td><td><input type="password" data-mk="${i}" value="${esc(S.keys[m.model] || '')}" placeholder="${m.providerType === 'ollama' ? 'not needed' : 'stored in this browser only'}" style="height:36px;width:100%" autocomplete="off"></td>${['In', 'Out'].map(k => `<td><input type="text" inputmode="decimal" data-price${k.toLowerCase()}="${i}" value="${esc(m['price' + k])}" placeholder="${m.providerType === 'openrouter' ? 'on Test' : m.providerType === 'ollama' ? '0' : 'manual'}" title="${m.priceAuto ? 'Filled from the OpenRouter price list' : m['price' + k] ? 'Entered by hand' : m.providerType === 'openrouter' ? 'Filled when you click Test' : 'Enter the price from the provider price list'}" style="height:36px;width:100%;${m.priceAuto ? 'color:var(--muted)' : ''}"></td>`).join('')}<td><div style="display:flex;gap:8px;align-items:center"><button class="btn" style="height:36px;width:64px;flex:none;padding:0" data-test="${i}">Test</button><span title="${esc((S.testFull || {})[i] || '')}" style="flex:1;min-width:0;height:36px;line-height:34px;padding:0 10px;border:1px solid var(--line);border-radius:8px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;${(S.testMsg[i] || '').startsWith('OK') ? 'color:var(--ok);background:var(--okBg)' : (S.testMsg[i] || '').startsWith('Testing') || !S.testMsg[i] ? 'color:var(--muted)' : 'color:var(--err);background:var(--errBg)'}">${esc(S.testMsg[i] || 'Test result')}</span></div></td></tr>`).join('')}</tbody></table></div>
+  <div style="display:flex;flex-direction:column;gap:10px;padding:12px 16px;border-top:1px solid var(--line)">
+  <div class="row"><label class="f" style="flex-direction:row;align-items:center;gap:8px">Generation temperature<input type="text" id="tempIn" value="${S.settings.temperature}" style="height:36px;width:70px"></label><span class="muted">Same for both generators; logged with every version. The judge always uses 0.</span></div>
+  <div class="grid2"><button class="btn" data-savekeys="1" style="width:100%">Save my keys</button><button class="btn" data-forgetkeys="1" style="width:100%">Forget my keys</button></div><div class="row">
+    <span class="muted" id="testMsg">${S.keysSaved ? 'Keys saved in this browser: they stay after you close the page. Use Forget my keys on a shared computer.' : 'Keys used for this session only: they are lost when the page closes, unless you click Save my keys.'} Keys are never sent anywhere except to the model providers, and never included in backups or exports.</span></div></div>
+  </div>
+  ${profileCard()}
+  ${promptCard()}
+` : profileCard()}
+  <div class="card" style="display:flex;flex-direction:column;gap:10px"><h2>Data</h2>
+    <span class="muted" style="font-size:13px">Saved automatically in ${where}. Save a backup regularly: clearing the browser's data deletes it.</span>
+    <div class="row"><button class="btn" data-backup="1">Save a backup (JSON)</button>
+      <label class="btn" for="restoreIn" style="display:inline-flex;align-items:center;cursor:pointer">Restore a backup</label><input type="file" id="restoreIn" accept=".json,application/json" style="position:absolute;left:-9999px">
+      <button class="btn" data-wipe="1" style="${S.confirmWipe ? 'border-color:var(--err);color:var(--err)' : ''}">${S.confirmWipe ? 'Click again to delete everything' : 'Delete all data'}</button></div></div>
+`;
+}
+
+/* ---------- First launch ---------- */
+function viewWelcome() {
+  const card = (r, title, text) => `<button class="card" data-pickrole="${r}" aria-pressed="${S.settings.role === r}" style="text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:6px;${S.settings.role === r ? 'outline:2px solid var(--accent);border-color:var(--accent);' : ''}"><b style="font-size:15px">${title}</b><span class="muted" style="font-size:13px;line-height:1.5">${text}</span></button>`;
+  return `<div style="max-width:760px;margin:24px auto;display:flex;flex-direction:column;gap:16px;width:100%">
+    <h1>Welcome to Adapt-CEFR</h1><p class="muted" style="margin:0;font-size:13px">Set up this installation once. You can change these settings later in Settings.</p>
+    <div class="f">Your role<div class="grid2">${card('admin', 'Administrator', 'Sets up the models, generates the texts, sends batches to the annotators and collects their results.')}${card('annotator', 'Annotator', 'Imports the batches received, evaluates and adapts the texts, then sends the results back. No model or key needed.')}</div></div>
+    <div class="grid2"><label class="f">Your pseudonym<input type="text" id="annotator" value="${esc(S.settings.annotator)}" placeholder="${isAdmin() ? 'admin-01' : 'annotator-01'}"></label>
+      ${isAdmin() ? `<label class="f">Corpus language<select id="corpusLang">${['French', 'English'].map(l => `<option ${S.settings.language === l ? 'selected' : ''}>${l}</option>`).join('')}</select><span class="muted">One installation per language.</span></label>` : '<span class="muted" style="align-self:center;font-size:13px">The corpus language is set by the batch you import.</span>'}</div>
+    <div class="row">${S.err ? `<span class="err">${esc(S.err)}</span>` : ''}<button class="btn primary" data-start="1" style="margin-left:auto">Start</button></div></div>`;
+}
+
+/* ---------- Guide ---------- */
+function viewGuide() {
+  const sec = (title, body) => `<section class="card" style="display:flex;flex-direction:column;gap:8px;font-size:13px;line-height:1.6"><h2>${title}</h2>${body}</section>`;
+  const tbl = (head, rows, widths) => `<table style="width:100%;table-layout:fixed">${widths ? `<colgroup>${widths.map(w => `<col style="width:${w}">`).join('')}</colgroup>` : ''}<thead><tr>${head.map(h => `<th style="white-space:normal">${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(c => `<td style="vertical-align:top;white-space:normal;overflow:visible">${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  return `<h1>Guide</h1>
+  <p class="muted" style="margin:0;font-size:13px">Everything an annotator needs, from the project specification. Texts are for reading comprehension: texts only, no questions.</p>
+  ${sec('How a task works', `<ul style="margin:0;padding-left:20px">
+    <li><b>Home</b> shows where you stand (validated texts, texts to evaluate, texts to adapt; click a card to filter) and lists every task: document (file name, or Generated), mode (simplification, complexification, adaptation or generation), source and target levels, language, batch, better version and status.</li>
+    <li><b>Corpus</b>: load a text from your computer (adaptation) or fill in a brief (generation); the texts already processed are listed below. Two models, drawn in rotation, each write one version with the same prompt. If you do not know the source level, click <b>Unknown? Estimate with the LLM</b>: the judge proposes a level, which you can correct, and the direction follows. The direction is <b>simplification</b> or <b>complexification</b>, or <b>adaptation</b> when the source level is unknown or equal to the target: the models then simplify or enrich as needed, to fit the level profile. The export records whether the level was given, estimated or unknown.</li>
+    <li><b>Evaluate</b>: the source text (or the brief) is in the middle, read only, between versions A and B. Rate A and B without knowing the models (level, meaning or brief, grammar and naturalness; the administrator sees the model names, and his evaluations are recorded as not blind), then choose the better one (A, Equal or B); the reason is optional. Counts under each text (words, sentence length, paragraphs, connectors) are computed automatically.</li>
+    <li><b>Adapt</b>: the LLM judge's ratings appear, and the model names for the administrator (annotators never see them). Versions A and B become editable, with the source text in the middle. The version you chose as better is marked <b>Final</b>; edit it directly, copy and paste between A and B as you like, or click <b>Use as final</b> on the other one. <b>Restore original</b> brings back the generated text; the generated versions are always kept for the analysis. Then <b>Validate version A (or B) for corpus</b>: this step is required to finish the task. If you leave Adapt before validating, the task waits in Home as To adapt.</li><li><b>Analysis</b> (administrator only): model duels, level reached, human contribution, agreement, SARI and costs, with a CSV of all evaluations, and the <b>Export corpus (JSONL)</b> button for the final silver corpus. Costs are the amounts charged by OpenRouter, or tokens × the prices entered in Settings for the direct APIs. <b>Settings</b>: installation, level profiles, and data (backup, restore); for the administrator, also the LLMs (provider, model ID, key, prices per million tokens, filled on Test for OpenRouter, and a connection test), the generation temperature, keys and prompt. <b>Guide</b>: this page.</li></ul>`)}
+  ${sec('Roles and batches', `<ul style="margin:0;padding-left:20px"><li><b>Administrator</b>: sets up the models, generates the texts in Corpus, groups them into a <b>batch</b> and sends the batch file to the annotators. Imports their results files, sees the agreement between annotators, and exports the corpus with every annotator's versions.</li><li><b>Annotator</b>: no model or key needed. In Corpus, imports the batch file, evaluates and adapts each text as usual, then clicks <b>Export my results</b> and sends the file to the administrator. Model names stay hidden.</li><li>The role is chosen at first launch, shown in the header, and can be changed in Settings. To measure agreement, at least two annotators must receive the same batch.</li></ul>`)}
+  ${sec('Before you rate', `<ul style="margin:0;padding-left:20px"><li>Read the source text or the brief, then the target level in Settings → Level profiles.</li><li>Read both versions in full before rating.</li><li>Rate each version on its own, against the target level, not against the other version. Both can get the same score.</li><li>Do not look for the model names: they stay hidden during the evaluation.</li></ul>`)}
+  ${sec('Rating scales (1 to 5, 5 = best)', tbl(['Score', 'Level', 'Meaning (adaptation) / brief (generation)', 'Grammar and naturalness'], [
+    ['5', 'Fully at the target level; a learner of that level understands without help.', 'All key information, no forbidden addition, no misinterpretation. Brief: theme, type and situation all respected.', 'No errors; natural for a native speaker.'],
+    ['4', 'At the level, with 1 or 2 isolated items above or below it.', 'Minor loss of secondary information. Brief: one secondary element approximate.', '1 or 2 awkward phrasings, no errors.'],
+    ['3', 'Partly at the level: several items off, or passages clearly too simple.', 'One key piece of information lost or one forbidden addition. Brief: one main element poorly respected.', 'Some errors or artificial phrasing; reading not hindered.'],
+    ['2', 'Rather the neighbouring level (one level off).', 'Several losses or additions, or a partial misinterpretation. Brief: two main elements missed.', 'Frequent errors or clearly artificial text.'],
+    ['1', 'Clearly another level (two levels or more off).', 'Overall meaning altered or major misinterpretation. Brief: off topic.', 'Errors that hinder understanding.']], ['8%', '31%', '35%', '26%']) +
+    `<p style="margin:0">Under the level score, when it is below 5, tick <b>Too easy</b> or <b>Too hard</b>. A level of 5 means the text is on target.</p>` +
+    `<p style="margin:0"><b>Not penalised</b>: in simplification, leaving out secondary information to meet the length; in complexification, the additions allowed below; the simplicity of a low-level text, under language quality.</p>`)}
+  ${sec('Length and enrichment', `<p style="margin:0">The target length is the level's, whatever the source length. Simplifying a long text means <b>keeping the essentials</b> and never contradicting the source. Complexifying a short text means <b>developing</b> it.</p>` +
+    tbl(['Allowed when enriching', 'Not allowed'], [['Definitions, explanations, rephrasing of source content', 'Proper names absent from the source'], ['Generic examples; connectors, transitions, introduction, conclusion', 'New figures, dates, quotes or events'], ['General, non-verifiable perspective', 'Causes or consequences the source does not state']]))}
+  ${sec('Choosing and writing your version', `<ul style="margin:0;padding-left:20px"><li><b>Better version</b>: the one closest to a usable reading text at the target level. It is pre-selected from your ratings (the higher level score wins; if equal, meaning or brief, then grammar); change it if your overall judgment differs. Choose <b>Equal</b> only if neither is better. The reason is optional but helpful.</li><li><b>Final version</b>: make the <b>smallest changes</b> needed to reach the level (counts in green) and fix errors. Do not rewrite for taste; keep the source's facts. If you rewrite more than half of the text, say so in the reason.</li><li><b>Your choices and the LLM judge's</b>: for the administrator, the band under the columns shows your level scores and your better version next to those of the LLM judge. The judge rates A and B twice, in both orders, and the averages are shown; "order-dependent" means its two readings disagreed. It also rates each validated final version, without knowing who wrote it. Annotators do not see the judge: the comparison is made by the administrator. Nothing to answer.</li></ul>`)}
+  ${sec('Target levels', `<p style="margin:0">The target values of each level (length, sentences, paragraphs, vocabulary, grammar, connectors, register, what to avoid) are in <b>Settings → Level profiles</b>.</p>`)}`;
+}
+
+const DIRS = ['Too easy', 'On target', 'Too hard'];
+function isComplete(t) {
+  const r = t.ev.r;
+  return ['A', 'B'].every(v => [1, 2, 3].every(i => r[v + i] !== undefined) && r[v + 'd']);
+}
+/* Better version pre-selected from the ratings: level first (closest to 3), then meaning or brief fit, then language. Editable. */
+function autoBest(t) {
+  const r = t.ev.r, keys = ['A1', 'A2', 'A3', 'B1', 'B2', 'B3'];
+  if (t.ev.bestManual) return;
+  if (!isComplete(t)) { t.ev.best = null; return; }
+  const score = v => [r[v + '1'], r[v + '2'], r[v + '3']];
+  const a = score('A'), b = score('B');
+  for (let i = 0; i < 3; i++) { if (a[i] > b[i]) { t.ev.best = 'A'; return; } if (b[i] > a[i]) { t.ev.best = 'B'; return; } }
+  t.ev.best = 'Equal';
+}
+
+/* ---------- Render ---------- */
+function render() {
+  renderNav();
+  const v = { home: viewHome, corpus: viewCorpus, evaluate: viewEvaluate, adapt: viewAdapt, settings: viewSettings, guide: viewGuide, analysis: isAdmin() ? viewAnalysis : viewHome }[S.view];
+  $('view').innerHTML = `<div style="display:flex;flex-direction:column;gap:14px">${S.settings.roleChosen ? v() : viewWelcome()}</div>`;
+  if (S.view === 'adapt' && S.animate) { S.animate = false; requestAnimationFrame(() => requestAnimationFrame(() => { const c = $('cols'); if (c) c.classList.add('open'); })); }
+  save();
+}
+function nextAfter(msg) {
+  S.toast = msg; S.current = null;
+  const n = pending()[0];
+  if (n) { S.current = n.id; go('evaluate'); } else go('home');
+}
+
+/* ---------- Events ---------- */
+document.addEventListener('click', e => {
+  const el = e.target.closest('button'); if (!el) return;
+  const d = el.dataset, t = cur();
+  if (el.id === 'brand') { Object.assign(S, uiDefaults()); render(); window.scrollTo(0, 0); return; }
+  if (d.pickrole) { S.settings.role = d.pickrole; S.err = ''; render(); return; }
+  if (d.start) {
+    if (!S.settings.annotator.trim()) { S.err = 'Enter a pseudonym first.'; render(); return; }
+    S.settings.roleChosen = true; go(isAdmin() ? 'home' : 'corpus'); persist(); return;
+  }
+  if (d.go) { go(d.go, { toast: '' }); return; }
+  if (d.new !== undefined) { S.newMode = d.new || null; S.level = null; S.fileErr = ''; S.toast = ''; S.formErr = ''; render(); return; }
+  if (d.brief) { S.brief = (S.brief + 1) % BRIEFS.length; const b = BRIEFS[S.brief]; S.theme = b[0]; S.type = b[1]; S.situation = b[2]; S.formErr = ''; render(); return; }
+  if (d.create) {
+    if (S.busy) return;
+    if (d.create === 'FR-Adapt' && !S.file) { S.fileErr = 'Choose a text file first.'; render(); return; }
+    if (!S.level) { S.formErr = 'Choose a target level first.'; render(); return; }
+    if (d.create === 'FR-Generate' && ((S.theme === '__other' && !S.themeOther.trim()) || (S.type === '__other' && !S.typeOther.trim()) || !S.situation.trim())) { S.formErr = 'Fill in the theme, the text type and the situation first.'; render(); return; }
+    const th = S.theme === '__other' ? S.themeOther.trim() : S.theme, ty = S.type === '__other' ? S.typeOther.trim() : S.type;
+    const spec = d.create === 'FR-Adapt'
+      ? { mode: 'Adapt', level: S.level, srcLevel: S.srcLevel, srcLevelSource: S.srcLevelSource, srcEstimate: S.estimate && !S.estimate.error ? S.estimate : null, direction: formDirection(), source: S.file.text, fileName: S.file.name, label: `Source text · ${S.file.name} · ${S.file.words} words` }
+      : { mode: 'Generate', level: S.level, brief: { theme: th, type: ty, situation: S.situation.trim() }, label: `Brief · ${th} · ${ty}` };
+    if (d.simulated) {
+      const nt = newTask(d.create); nt.level = spec.level; nt.srcLabel = spec.label;
+      if (spec.mode === 'Adapt') { nt.src = spec.source; nt.sourceFile = spec.fileName; nt.srcLevel = spec.srcLevel; nt.srcLevelSource = spec.srcLevelSource; nt.srcEstimate = spec.srcEstimate; nt.dir = spec.direction; } else { nt.brief = spec.brief; nt.dir = ty; nt.src = `${spec.brief.situation}\nTheme: ${th} · Text type: ${ty}.`; }
+      S.tasks.push(nt); S.newMode = null; S.file = null; S.formErr = ''; S.current = nt.id; go('evaluate'); return;
+    }
+    S.busy = true; S.formErr = ''; render();
+    generateTask(spec).then(nt => { S.tasks.push(nt); queueJudge(nt); S.busy = false; S.newMode = null; S.file = null; S.current = nt.id; go('evaluate'); })
+      .catch(err => { S.busy = false; S.formErr = err.message; render(); });
+    return;
+  }
+
+  if (d.simulate) { const b = document.querySelector('[data-create]'); if (b) { b.dataset.simulated = '1'; b.click(); delete b.dataset.simulated; } return; }
+  if (d.htab) { S.homeTab = S.homeTab === d.htab ? 'all' : d.htab; render(); return; }
+  if (d.eval) { S.current = +d.eval; go('evaluate', { toast: '' }); return; }
+  if (d.del) {
+    const id = +d.del;
+    if (S.confirmDel !== id) { S.confirmDel = id; render(); return; }
+    S.tasks = S.tasks.filter(x => x.id !== id); S.confirmDel = null; if (S.current === id) S.current = null; render(); return;
+  }
+  if (S.confirmDel) S.confirmDel = null;
+  if (d.lvl) { S.level = d.lvl; S.formErr = ''; render(); return; }
+  if (d.srclvl) { S.srcLevel = d.srclvl; S.srcLevelSource = 'given'; S.formErr = ''; render(); return; }
+  if (d.estimate && S.file && !S.estimating) {
+    S.estimate = null; S.formErr = '';
+    if (!judgeReady()) { S.srcLevel = 'Unknown'; S.srcLevelSource = 'unknown'; render(); return; }
+    S.estimating = true; render();
+    estimateLevel(S.file.text).then(e => { S.estimate = e; S.srcLevel = e.level; S.srcLevelSource = 'estimated'; })
+      .catch(err => { S.estimate = { error: err.message }; S.srcLevel = 'Unknown'; S.srcLevelSource = 'unknown'; }).finally(() => { S.estimating = false; render(); });
+    return;
+  }
+  if (d.resume) { S.current = +d.resume; S.animate = true; go('adapt', { toast: '' }); return; }
+  if (d.rate && t && t.status === 'to-evaluate') {
+    const val = isNaN(+d.val) ? d.val : +d.val, r = t.ev.r;
+    r[d.rate] = val;
+    if (d.rate.endsWith('1')) { const dk = d.rate[0] + 'd'; if (val === 5) r[dk] = 'On target'; else if (r[dk] === 'On target') delete r[dk]; }
+    t.ev.bestManual = false; S.err = ''; autoBest(t); render(); return;
+  }
+  if (d.regv && t) { t.ev.reg[d.regv] = t.ev.reg[d.regv] === d.val ? '' : d.val; render(); return; }
+  if (d.best && t && t.status === 'to-evaluate' && isComplete(t)) { t.ev.best = d.best; t.ev.bestManual = true; S.err = ''; render(); return; }
+  if (d.validateEval && t) {
+    const need = ['A1', 'A2', 'A3', 'B1', 'B2', 'B3', 'Ad', 'Bd'];
+    if (need.some(k => t.ev.r[k] === undefined) || !t.ev.best) { S.err = 'Rate both versions and choose the better one first.'; render(); return; }
+    t.status = 'adapting'; t.ev.validatedAt = new Date().toISOString(); t.ev.blind = !(isAdmin() && t.A.model); S.animate = true; go('adapt', { toast: '' }); return;
+  }
+  if (d.final && t && t.status === 'adapting') { ensureEdits(t); t.finalSide = d.final; S.yourErr = ''; render(); return; }
+  if (d.restore && t && t.status === 'adapting') { ensureEdits(t); t.edit[d.restore] = t[d.restore].text; render(); return; }
+  if (d.corpus && t) {
+    ensureEdits(t);
+    if (!t.finalSide) { S.yourErr = 'Choose the final version first: click Use as final above A or B.'; render(); return; }
+    if (!t.edit[t.finalSide].trim()) { S.yourErr = 'The final version is empty.'; render(); return; }
+    t.your = t.edit[t.finalSide];
+    t.status = 'done'; t.validatedAt = new Date().toISOString(); t.dist = { A: wordDistance(t.your, t.A.text), B: wordDistance(t.your, t.B.text) };
+    queueJudge(t); nextAfter(`Task ${t.id} added to the silver corpus.`); return;
+  }
+  if (d.export) {
+    if (!S.tasks.some(x => finalRecords(x).length)) { S.toast = 'No validated text to export yet.'; render(); return; }
+    download(`adapt-cefr-corpus-${stamp()}.jsonl`, corpusJsonl(), 'application/x-ndjson'); return;
+  }
+  if (d.csv) { download(`adapt-cefr-analysis-${stamp()}.csv`, toCsv(analysisRows()), 'text/csv'); return; }
+  if (d.runjudge) { judgeMissing().forEach(queueJudge); render(); return; }
+  if (d.mkbatch) {
+    const unb = S.tasks.filter(x => !x.batch && x.A && x.B); if (!unb.length) return;
+    S.settings.batchSeq += 1; const b = 'B' + S.settings.batchSeq;
+    unb.forEach(x => { x.batch = b; x.uid = x.uid || `${S.settings.installId}-${x.id}`; });
+    S.toast = `Batch ${b} created with ${unb.length} text${unb.length === 1 ? '' : 's'}.`; render(); return;
+  }
+  if (d.bexport) { download(`adapt-cefr-batch-${d.bexport}-${stamp()}.json`, JSON.stringify(batchFile(d.bexport), null, 2), 'application/json'); return; }
+  if (d.exportres) {
+    if (!S.settings.annotator.trim()) { S.toast = 'Set your annotator pseudonym in Settings first.'; render(); return; }
+    const rf = resultsFile(); if (!rf.results.length) { S.toast = 'No evaluated text to export yet.'; render(); return; }
+    download(`adapt-cefr-results-${S.settings.annotator.trim().replace(/[^\w-]+/g, '_')}-${stamp()}.json`, JSON.stringify(rf, null, 2), 'application/json'); return;
+  }
+  if (d.proflv) { S.profLevel = d.proflv; S.profOpen = true; render(); return; }
+  if (d.profsave) { const v = saveProfiles(S.profDraft); if (v) S.toast = `Level profiles saved as ${v}.`; S.profOpen = true; render(); return; }
+  if (d.profdiscard) { S.profDraft = null; S.profErr = ''; S.profOpen = true; render(); return; }
+  if (d.profreset) { S.profDraft = JSON.parse(JSON.stringify(PROFILES)); S.profErr = ''; S.profOpen = true; render(); return; }
+  if (d.psave) { const v = savePrompts(S.promptDraft); if (v) S.toast = `Prompt saved as ${v}.`; S.promptOpen = true; render(); return; }
+  if (d.pdiscard) { S.promptDraft = null; S.promptErr = ''; S.promptOpen = true; render(); return; }
+  if (d.preset) { S.promptDraft = Object.assign({}, DEFAULT_PROMPTS[S.settings.language]); S.promptErr = ''; S.promptOpen = true; render(); return; }
+  if (d.savekeys) { S.keysSaved = true; saveKeys(); S.toast = 'Keys saved in this browser.'; render(); return; }
+  if (d.forgetkeys) { S.keysSaved = false; S.keys = {}; try { localStorage.removeItem(LS_KEYS); } catch (e) { /* nothing stored */ } S.toast = 'Keys deleted from this browser.'; render(); return; }
+  if (d.backup) { download(`adapt-cefr-backup-${stamp()}.json`, JSON.stringify(snapshot(), null, 2), 'application/json'); return; }
+  if (d.wipe) {
+    if (!S.confirmWipe) { S.confirmWipe = true; render(); return; }
+    S.tasks = []; S.seq = 0; S.confirmWipe = false; Object.assign(S, { current: null }); S.toast = 'All data deleted.'; render(); return;
+  }
+  if (d.test !== undefined) {
+    const m = S.settings.models[+d.test]; S.testFull = S.testFull || {}; S.testMsg[d.test] = 'Testing…'; S.testFull[d.test] = ''; render();
+    const short = msg => /no API key/.test(msg) ? 'No key' : /no model ID/.test(msg) ? 'No model ID' : /HTTP 401|HTTP 403/.test(msg) ? 'Invalid key' : /HTTP 402/.test(msg) ? 'No credit' : /HTTP 404|not a valid model|No endpoints/i.test(msg) ? 'Unknown model' : /HTTP 429/.test(msg) ? 'Rate limit' : /network|CORS|reach/i.test(msg) ? 'Network error' : /empty answer/.test(msg) ? 'Empty answer' : (msg.match(/HTTP \d+/) || ['Error'])[0];
+    if (m.providerType === 'openrouter' && m.modelId) openRouterPrices().then(map => {
+      const p = map[m.modelId]; if (!p) return;
+      if (!m.priceIn || m.priceAuto) { m.priceIn = priceTxt(p.in); m.priceOut = priceTxt(p.out); m.priceAuto = true; save(); render(); }
+    }).catch(() => { /* price list unavailable: prices stay as they are */ });
+    callModel(m, 'You are a test.', 'Reply with the single word OK.', { temperature: 0, seed: 1, maxTokens: 1000 })
+      .then(r => { S.testMsg[d.test] = `OK · ${(r.latencyMs / 1000).toFixed(1)} s${r.cost.usd !== null ? ' · ' + fmtUsd(r.cost.usd) : ''}`; S.testFull[d.test] = `OK · ${r.latencyMs} ms · ${r.returnedModel} · ${r.usage.in} in / ${r.usage.out} out tokens · ${r.cost.usd !== null ? fmtUsd(r.cost.usd) + ' ' + r.cost.kind : 'cost unknown'}`; render(); })
+      .catch(err => { S.testMsg[d.test] = short(err.message); S.testFull[d.test] = err.message; render(); });
+    return;
+  }
+});
+document.addEventListener('input', e => {
+  if (e.target.id === 'themeOther') { S.themeOther = e.target.value; S.formErr = ''; return; }
+  if (e.target.id === 'typeOther') { S.typeOther = e.target.value; S.formErr = ''; return; }
+  if (e.target.id === 'situation') { S.situation = e.target.value; S.formErr = ''; return; }
+  if (e.target.id === 'annotator') { S.settings.annotator = e.target.value; save(); return; }
+  if (e.target.dataset.mv !== undefined) { const m = S.settings.models[+e.target.dataset.mv]; m.modelId = e.target.value.trim(); if (m.priceAuto) { m.priceIn = m.priceOut = ''; m.priceAuto = false; const i = e.target.dataset.mv; ['in', 'out'].forEach(k => { const f = document.querySelector(`[data-price${k}="${i}"]`); if (f) f.value = ''; }); } save(); return; }
+  if (e.target.dataset.pricein !== undefined || e.target.dataset.priceout !== undefined) { const isIn = e.target.dataset.pricein !== undefined, m = S.settings.models[+(isIn ? e.target.dataset.pricein : e.target.dataset.priceout)]; m[isIn ? 'priceIn' : 'priceOut'] = e.target.value.trim().replace(',', '.'); m.priceAuto = false; e.target.style.color = ''; save(); return; }
+  if (e.target.id === 'tempIn') { const v = parseFloat(e.target.value); if (!isNaN(v) && v >= 0 && v <= 2) { S.settings.temperature = v; save(); } return; }
+  if (e.target.dataset.prof) {
+    const k = e.target.dataset.prof, num = PROF_NUM.some(x => x[0] === k);
+    profSet(S.profDraft[S.profLevel || 'B1'], k, S.settings.language, num ? parseInt(e.target.value, 10) : e.target.value); S.profErr = '';
+    const changed = JSON.stringify(S.profDraft) !== JSON.stringify(activeProfiles());
+    document.querySelectorAll('[data-profsave],[data-profdiscard]').forEach(b => { b.disabled = !changed; }); return;
+  }
+  if (e.target.dataset.pf) {
+    S.promptDraft[e.target.dataset.pf] = e.target.value; S.promptErr = '';
+    const changed = PROMPT_FIELDS.some(([k]) => S.promptDraft[k] !== currentPrompts()[k]);
+    document.querySelectorAll('[data-psave],[data-pdiscard]').forEach(b => { b.disabled = !changed; }); return;
+  }
+  if (e.target.dataset.mk !== undefined) { S.keys[S.settings.models[+e.target.dataset.mk].model] = e.target.value; saveKeys(); return; }
+  const t = cur(); if (!t) return;
+  if (e.target.id === 'why') { t.ev.why = e.target.value; save(); }
+  if (e.target.dataset.edit && t.status === 'adapting') {
+    const v = e.target.dataset.edit; ensureEdits(t); t.edit[v] = e.target.value; $('chips' + v).innerHTML = liveChips(t, t.edit[v]);
+    const rb = document.querySelector(`[data-restore="${v}"]`); if (rb) rb.disabled = t.edit[v] === t[v].text; save();
+  }
+});
+document.addEventListener('change', e => {
+  if (e.target.dataset.dirv) { const t2 = cur(); if (t2 && t2.status === 'to-evaluate') { t2.ev.r[e.target.dataset.dirv + 'd'] = e.target.value; t2.ev.bestManual = false; autoBest(t2); render(); } return; }
+  if (e.target.id === 'pairSel') { S.pair = e.target.value; return; }
+  if (e.target.dataset.mp !== undefined) { const m = S.settings.models[+e.target.dataset.mp]; m.providerType = e.target.value; if (m.priceAuto) { m.priceIn = m.priceOut = ''; m.priceAuto = false; } save(); render(); return; }
+  if (e.target.id === 'roleSel') { S.settings.role = e.target.value; S.newMode = null; render(); return; }
+  if ((e.target.id === 'batchIn' || e.target.id === 'resultsIn') && e.target.files.length) {
+    const files = [...e.target.files], isBatch = e.target.id === 'batchIn'; let total = 0, bad = 0, done = 0;
+    files.forEach(f => { const r = new FileReader(); r.onload = () => {
+      try { const d = JSON.parse(String(r.result));
+        if (!APP_IDS.includes(d.app) || d.kind !== (isBatch ? 'batch' : 'results')) throw new Error('wrong file');
+        total += isBatch ? importBatch(d) : importResults(d); }
+      catch (err) { bad++; }
+      if (++done === files.length) { if (!isBatch) S.tasks.forEach(queueJudge); S.toast = (isBatch ? `${total} new text${total === 1 ? '' : 's'} imported.` : `Results imported for ${total} text${total === 1 ? '' : 's'}.`) + (bad ? ` ${bad} file${bad === 1 ? ' is' : 's are'} not an Adapt-CEFR ${isBatch ? 'batch' : 'results'} file.` : ''); render(); }
+    }; r.readAsText(f); });
+    e.target.value = ''; return;
+  }
+  if (e.target.id === 'corpusLang') { S.settings.language = e.target.value; S.promptDraft = null; S.profDraft = null; render(); return; }
+  if (e.target.id === 'restoreIn' && e.target.files[0]) {
+    const r = new FileReader();
+    r.onload = () => {
+      try { const d = JSON.parse(String(r.result)); if (!APP_IDS.includes(d.app) || !Array.isArray(d.tasks)) throw new Error('not a backup');
+        applyData(d); Object.assign(S, uiDefaults()); S.view = 'settings'; S.toast = `Backup restored: ${S.tasks.length} tasks.`; }
+      catch (err) { S.toast = 'This file is not an Adapt-CEFR backup.'; }
+      render();
+    };
+    r.readAsText(e.target.files[0]); return;
+  }
+  if (e.target.id === 'theme') { S.theme = e.target.value; S.formErr = ''; render(); return; }
+  if (e.target.id === 'type') { S.type = e.target.value; S.formErr = ''; render(); return; }
+  if (e.target.id === 'fileIn' && e.target.files[0]) {
+    const f = e.target.files[0], r = new FileReader();
+    r.onload = () => { const text = String(r.result); S.file = { name: f.name, text: text, words: text.trim() ? text.trim().split(/\s+/).length : 0 }; S.formErr = ''; S.fileErr = ''; S.level = null; S.estimate = null; if (S.srcLevel === 'Unknown') S.srcLevel = 'C1'; S.srcLevelSource = 'given'; render(); };
+    r.readAsText(f); return;
+  }
+  const t = cur(); if (!t) return;
+  if (e.target.dataset.errv) { const v = e.target.dataset.errv, arr = t.ev.err[v]; if (e.target.checked) arr.push(e.target.value); else arr.splice(arr.indexOf(e.target.value), 1); render(); }
+});
+window.addEventListener('pagehide', () => { clearTimeout(saveTimer); persist(); });
+document.addEventListener('toggle', e => { if (e.target.id === 'promptBox') S.promptOpen = e.target.open; if (e.target.id === 'profBox') S.profOpen = e.target.open; }, true);
+boot();
+</script>
+</body>
+</html>
